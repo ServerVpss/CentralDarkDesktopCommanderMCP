@@ -18,6 +18,18 @@ export function configReady() {
       && u.origin === url.replace(/\/$/, "") && isPublicKey(key);
   } catch { return false; }
 }
+// The public auth settings endpoint tells the UI whether Google is enabled.
+export async function googleLoginAvailable(): Promise<boolean> {
+  if (!configReady()) return false;
+  try {
+    const response = await fetch(url.replace(/\/$/, "") + "/auth/v1/settings", {
+      headers: { apikey: key }, signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) return false;
+    const settings = await response.json();
+    return settings.external?.google === true;
+  } catch { return false; }
+}
 let client: ReturnType<typeof createClient> | undefined;
 export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
   get(_, property, receiver) {

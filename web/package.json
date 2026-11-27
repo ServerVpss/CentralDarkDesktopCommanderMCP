@@ -9,8 +9,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --experimental-strip-types --test test/return-to.test.ts",
-    "preview": "vite preview"
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.89.0",

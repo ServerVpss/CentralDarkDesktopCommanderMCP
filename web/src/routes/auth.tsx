@@ -1,7 +1,8 @@
 import { finishAuth } from "@/lib/return-to";
+import { readRememberedEmail, rememberEmail } from "@/lib/remember-email";
 import { useEffect, useState } from "react";
 import { LockKeyhole } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { googleLoginAvailable, supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,17 +10,21 @@ import { Input } from "@/components/ui/input";
 
 export default function PaginaAcesso() {
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => readRememberedEmail());
+  const [lembrarEmail, setLembrarEmail] = useState(() => Boolean(readRememberedEmail()));
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [googleDisponivel, setGoogleDisponivel] = useState<boolean | null>(null);
 
   // Callback OAuth / confirmação de e-mail: quando a sessão existir, retoma o pareamento.
   useEffect(() => {
     const renovar = new URLSearchParams(window.location.search).get("renovar") === "1";
+    let ativo = true;
+    void googleLoginAvailable().then(disponivel => { if (ativo) setGoogleDisponivel(disponivel); });
     supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) return;
+      if (!ativo || !data.session) return;
       // A sala pode ter rejeitado a sessão server-side. Em modo de renovação,
       // encerra apenas a sessão local para impedir o loop /mcp-autorizar → /auth.
       if (renovar) {
@@ -27,12 +32,12 @@ export default function PaginaAcesso() {
         return;
       }
       finishAuth();
-    });
+    }).catch(() => { if (ativo) setErro("Não foi possível consultar a sessão. Tente novamente."); });
     const { data } = supabase.auth.onAuthStateChange((evento, sessao) => {
-      if (evento === "SIGNED_IN" && sessao) finishAuth();
+      if (ativo && evento === "SIGNED_IN" && sessao) finishAuth();
     });
-    return () => data.subscription.unsubscribe();
-  }, [navegar]);
+    return () => { ativo = false; data.subscription.unsubscribe(); };
+  }, []);
 
   // O GoTrue pode retornar HTTP 400/validation_failed para parâmetros inválidos.
   // Não confundir validação com indisponibilidade nem revelar existência de contas.
@@ -51,6 +56,7 @@ export default function PaginaAcesso() {
       return;
     }
 
+    rememberEmail(lembrarEmail ? emailNormalizado : "");
     setOcupado(true);
     try {
       if (modo === "criar") {
@@ -109,13 +115,14 @@ export default function PaginaAcesso() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) {
-      setErro(error.message);
+      setErro("Não foi possível solicitar a recuperação. Tente novamente.");
       return;
     }
-    setAviso("Enviamos um link para criar uma nova senha.");
+    setAviso("Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.");
   }
 
   async function entrarGoogle() {
+    if (googleDisponivel !== true) return;
     setOcupado(true);
     setErro(null);
     setAviso(null);
@@ -190,6 +197,10 @@ export default function PaginaAcesso() {
             placeholder="Senha (mínimo 6 caracteres)"
             aria-label="Senha"
           />
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input type="checkbox" checked={lembrarEmail} onChange={(e) => { setLembrarEmail(e.target.checked); if (!e.target.checked) rememberEmail(""); }} className="size-4 accent-gold" />
+            Lembrar meu e-mail
+          </label>
           {erro ? (
             <p role="alert" className="text-sm text-destructive">
               {erro}
@@ -223,10 +234,11 @@ export default function PaginaAcesso() {
           variant="outline"
           className="w-full"
           onClick={entrarGoogle}
-          disabled={ocupado}
+          disabled={ocupado || googleDisponivel !== true}
         >
           Continuar com Google
         </Button>
+        {googleDisponivel === false ? <p className="mt-2 text-xs text-muted-foreground text-center">Acesso com Google indisponível no momento.</p> : null}
       </section>
     </main>
   );

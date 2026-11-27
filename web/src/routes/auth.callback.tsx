@@ -45,11 +45,11 @@ export default function AuthCallback() {
       if (ativo) finishAuth();
     }
 
-    void concluir();
+    void concluir().catch(() => { if (ativo) setErro("Não foi possível validar o retorno do acesso."); });
     return () => {
       ativo = false;
     };
-  }, [navegar]);
+  }, []);
 
   return (
     <main className="grid min-h-dvh place-items-center px-4 pb-44 pt-16">

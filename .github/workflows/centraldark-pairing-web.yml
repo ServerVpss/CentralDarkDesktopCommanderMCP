@@ -26,6 +26,7 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm test
+      - run: npm run typecheck
       - name: Build React with CentralDark public configuration
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
