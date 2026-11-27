@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { SERVER_ORIGIN, SUPABASE_ORIGIN, REMOTE_PROTOCOL, validatePublicKey, validateRemoteInfo, checkRemoteConfig } from "../remote-config.mjs";
 
-const valid = { protocol: REMOTE_PROTOCOL, supabaseUrl: SUPABASE_ORIGIN, supabasePublishableKey: "sb_publishable_example" };
+const valid = { protocol: REMOTE_PROTOCOL, supabaseUrl: SUPABASE_ORIGIN, supabasePublishableKey: "sb_publishable_example", pairingOnly: true };
 test("permite somente o projeto e protocolo CentralDark", () => {
   assert.deepEqual(validateRemoteInfo(valid), { protocol: REMOTE_PROTOCOL, serverOrigin: SERVER_ORIGIN, supabaseUrl: SUPABASE_ORIGIN });
   for (const supabaseUrl of ["http://lyoigsqluyktoclwdaft.supabase.co", "https://other.supabase.co", SUPABASE_ORIGIN + ":8443", SUPABASE_ORIGIN + "/path", SUPABASE_ORIGIN + ".example.org"]) {

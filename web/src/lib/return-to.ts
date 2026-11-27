@@ -1,6 +1,6 @@
 // Only resume the existing consent route on this origin. Never store tokens.
 const KEY = "centraldark.mcp.pending-consent";
-const FIELDS = ["client_id","client_name","redirect_uri","response_type","code_challenge","code_challenge_method","state","scope","pair_id","pair_nonce","pair_code"] as const;
+const FIELDS = ["client_id","client_name","redirect_uri","response_type","code_challenge","code_challenge_method","state","scope","pair_id","pair_nonce"] as const;
 export function safePairingPath(value: string): string | null {
   if (!value.startsWith("/mcp-autorizar?") || value.length > 8192) return null;
   const url = new URL(value, "https://mcp.centralldark.com");

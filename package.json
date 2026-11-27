@@ -23,7 +23,8 @@
     "logo.png",
     "testemonials",
     "centraldark/cli.mjs",
-    "centraldark/remote-config.mjs"
+    "centraldark/remote-config.mjs",
+    "centraldark/pairing-test.mjs"
   ],
   "scripts": {
     "postinstall": "node dist/npm-scripts/verify-ripgrep.js || node -e \"process.exit(0)\"",

@@ -21,6 +21,7 @@ export function validateRemoteInfo(info) {
     throw new Error("Projeto Supabase não autorizado.");
   }
   if (!validatePublicKey(info.supabasePublishableKey)) throw new Error("Chave pública Supabase inválida.");
+  if (info.pairingOnly !== true) throw new Error("Modo de prova de pareamento não autorizado.");
   return { protocol: REMOTE_PROTOCOL, serverOrigin: SERVER_ORIGIN, supabaseUrl: SUPABASE_ORIGIN };
 }
 

@@ -7,3 +7,7 @@ O contrato de descoberta usa GET https://mcp.centralldark.com/api/mcp-info: prot
 Antes de liberar o motor: adaptar device/start, device/poll, device/revoke, regras RLS por sessão de dispositivo e canais Realtime privados; testar revogação, replay, usuário cruzado, expiração, concorrência e chamada de teste. Não reutilizar sessão administrativa nem conceder ao dispositivo a identidade completa do administrador. Adaptar os instaladores, diagnóstico, telemetria, diretório de dados e pipeline de publicação upstream antes de publicar.
 
 O Supabase Auth da aplicação web permanece no projeto existente. Não há credenciais privadas no código.
+
+## Prova de pareamento
+
+Backend proposto no PR https://github.com/ServerVpss/CentralDark/pull/2191. Após deploy coordenado e feature flag habilitada, use `npm run start:centraldark -- remote --pair-test`. A CLI abre somente a tela do domínio MCP, exige código digitado pelo administrador autenticado no Supabase, recebe uma sessão opaca exclusiva de cinco minutos, confirma via API e revoga. Não salva credenciais e não marca o dispositivo online. Não há chamadas de ferramenta. Falha na revogação é reportada como pendência. CI usa fixtures, não prova o login real.

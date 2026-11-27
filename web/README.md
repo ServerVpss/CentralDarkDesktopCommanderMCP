@@ -23,3 +23,5 @@ Pendências antes da troca de domínio: validar e permitir exclusivamente a nova
 ## Origem de autenticação CentralDark
 
 A interface aceita somente o projeto Supabase `lyoigsqluyktoclwdaft` e uma chave pública. A chave deve ser injetada pelo ambiente da publicação. Não copie sessões do cockpit para o dispositivo. O backend ainda deve implementar e testar o protocolo de pareamento e o isolamento das sessões antes de liberar execução remota.
+
+A página do fork exige digitar o código do terminal e só exibe confirmação após resposta de sucesso do backend; ignora sucesso e código recebidos por query. Backend de pareamento: PR https://github.com/ServerVpss/CentralDark/pull/2191. Publicação e confirmação humana reais ainda pendentes.

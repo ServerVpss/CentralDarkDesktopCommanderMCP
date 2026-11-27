@@ -48,7 +48,7 @@ export default function AutorizarMcp() {
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     alterarParams(query);
-    if (!query.get("client_id") || query.get("success") === "1") return;
+    if (!query.get("client_id")) return;
     let ativo = true;
     supabase.auth.getSession().then(({data, error}) => {
       if (ativo && (error || !data.session)) {
@@ -64,12 +64,11 @@ export default function AutorizarMcp() {
   const nome = dispositivo
     ? (clientId === CLIENTE_BRIDGE ? "CentralDark Remote Bridge" : "CentralDark · Vibe Coding")
     : (params?.get("client_name") || clientId || "Cliente MCP");
-  const codigoVisivel = dispositivo && params ? params.get("pair_code") || "" : "";
-  const sucesso = (params?.get("success") === "1" || confirmado) && dispositivo;
+  const sucesso = confirmado && dispositivo;
   const falha = params?.get("error") || "";
   const scopes = (params?.get("scope") || "mcp").split(/\s+/).filter(Boolean);
   const autorizado = dispositivo
-    ? Boolean(params?.get("pair_id") && params?.get("pair_nonce") && (codigoVisivel || pairCode.trim()))
+    ? Boolean(params?.get("pair_id") && params?.get("pair_nonce") && /^[A-F0-9]{4}-[A-F0-9]{4}$/.test(pairCode.trim()))
     : Boolean(clientId && params?.get("redirect_uri") && params?.get("response_type") === "code"
       && params?.get("code_challenge") && params?.get("code_challenge_method") === "S256");
   const titulo = dispositivo ? "Confirmar pareamento" : "Autorizar acesso MCP";
@@ -164,7 +163,7 @@ export default function AutorizarMcp() {
                 Retorne ao {nome} e confira o estado da conexão no próprio aplicativo.
               </p>
               <p className="text-xs text-muted-foreground">
-                O token do dispositivo não é exibido nesta página.
+                Volte ao terminal para conferir a sessão. Nenhum token é exibido nesta página.
               </p>
             </div>
           ) : !params ? (
@@ -205,13 +204,13 @@ export default function AutorizarMcp() {
                 <div className="space-y-0 px-3">
                   <div className="flex items-center gap-2 border-b border-border py-2.5">
                     <KeyRound className="size-4 shrink-0 text-gold" aria-hidden="true" />
-                    <p className="min-w-0 flex-1 text-xs">{dispositivo ? "Vincular o dispositivo autorizado" : "Acessar o MCP com os escopos aprovados"}</p>
+                    <p className="min-w-0 flex-1 text-xs">{dispositivo ? "Confirmar autorização de pareamento" : "Acessar o MCP com os escopos aprovados"}</p>
                     <Check className="size-4 shrink-0 text-gold" aria-hidden="true" />
                   </div>
                   <div className="flex items-center gap-2 py-2.5">
                     <ShieldCheck className="size-4 shrink-0 text-gold" aria-hidden="true" />
                     <p className="min-w-0 flex-1 text-xs">
-                      {scopes.includes("admin") ? "Inclui acesso administrativo solicitado" : "Somente capacidades permitidas pelo servidor"}
+                      {scopes.includes("admin") ? "Inclui acesso administrativo solicitado" : "O teste de pareamento não libera execução remota"}
                     </p>
                     <Check className="size-4 shrink-0 text-gold" aria-hidden="true" />
                   </div>
@@ -230,22 +229,14 @@ export default function AutorizarMcp() {
                   <input key={campo} type="hidden" name={campo} value={params.get(campo) || ""} />
                 ))}
                 {dispositivo && (
-                  codigoVisivel ? (
-                    <div className="rounded-lg border border-gold/30 bg-background px-3 py-3 text-center">
-                      <span className="block text-[10px] text-muted-foreground">Código solicitado pelo {nome}</span>
-                      <output className="mt-1 block font-mono text-xl font-bold tracking-widest text-gold"
-                        aria-label="Código de pareamento">{codigoVisivel}</output>
-                      <input type="hidden" name="pair_code" value={codigoVisivel} />
-                    </div>
-                  ) : (
-                    <label className="block text-xs">
-                      Código apresentado pelo {nome}
-                      <input type="text" name="pair_code" autoComplete="off" required
-                        value={pairCode} onChange={e => alterarPairCode(e.target.value.toUpperCase())}
-                        className="mt-2 block h-10 w-full rounded-md border border-input bg-background px-3 font-mono text-sm uppercase tracking-widest"
-                        placeholder="0000-0000" />
-                    </label>
-                  )
+                  <label className="block text-xs">
+                    Digite o código apresentado no terminal
+                    <input type="text" name="pair_code" autoComplete="off" required
+                      maxLength={9} pattern="[A-F0-9]{4}-[A-F0-9]{4}"
+                      value={pairCode} onChange={e => alterarPairCode(e.target.value.toUpperCase())}
+                      className="mt-2 block h-10 w-full rounded-md border border-input bg-background px-3 font-mono text-sm uppercase tracking-widest"
+                      placeholder="0000-0000" />
+                  </label>
                 )}
                 {!autorizado && (
                   <p role="alert" className="text-xs text-destructive">
