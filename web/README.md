@@ -19,3 +19,7 @@ Fonte: https://github.com/ServerVpss/CentralDark/tree/main/CentralDark-Core/apps
 - styles.css: c1efb3e7453bc6235ba44a406410db6884ab71e6
 
 Pendências antes da troca de domínio: validar e permitir exclusivamente a nova origem MCP no backend /authorize; ajustar URLs de consentimento, documentação e /status; autorizar callbacks exatos no Supabase; conservar o túnel/API até existir encaminhamento de todas as rotas MCP/OAuth; compatibilizar /device/start, /device/poll e /api/mcp-info do fork com o backend existente e sessões de dispositivo segregadas. Não promover token administrativo a token de dispositivo nem aceitar cliente novo por mudança apenas de UI. Testar anônimo, usuário comum, admin, expiração, nonce, replay e confirmação humana, além de tools/list e uma chamada inofensiva. A aplicação não declara computador conectado sem prova de execução do cliente. Nenhuma alteração de produção foi feita por este PR.
+
+## Origem de autenticação CentralDark
+
+A interface aceita somente o projeto Supabase `lyoigsqluyktoclwdaft` e uma chave pública. A chave deve ser injetada pelo ambiente da publicação. Não copie sessões do cockpit para o dispositivo. O backend ainda deve implementar e testar o protocolo de pareamento e o isolamento das sessões antes de liberar execução remota.

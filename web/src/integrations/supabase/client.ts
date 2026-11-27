@@ -1,18 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
-const url = import.meta.env.VITE_SUPABASE_URL?.trim() || "";
+const TRUSTED_ORIGIN = "https://lyoigsqluyktoclwdaft.supabase.co";
+const url = import.meta.env.VITE_SUPABASE_URL?.trim() || TRUSTED_ORIGIN;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() || "";
 function isPublicKey(value: string) {
   if (value.startsWith("sb_publishable_")) return true;
   try {
     const payload = value.split(".")[1];
     if (!payload || value.split(".").length !== 3) return false;
-    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))).role === "anon";
+    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return claims.role === "anon" && claims.ref === "lyoigsqluyktoclwdaft";
   } catch { return false; }
 }
 export function configReady() {
   try {
     const u = new URL(url);
-    return u.protocol === "https:" && /^[a-z0-9]+\.supabase\.co$/.test(u.hostname)
+    return u.origin === TRUSTED_ORIGIN
       && u.origin === url.replace(/\/$/, "") && isPublicKey(key);
   } catch { return false; }
 }

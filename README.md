@@ -23,13 +23,15 @@ Trabalhe com código e texto, execute processos e automatize tarefas além dos e
 
 **Endereço planejado:** [mcp.centralldark.com](https://mcp.centralldark.com).
 
-**Comando próprio previsto — ainda não publicado nem validado:**
+**Comando próprio — pacote privado em preparação, ainda não publicado:**
 
 ```bash
 npx @centraldark/desktop-commander@latest remote
 ```
 
 A primeira versão terá login com o Supabase existente, confirmação do código de pareamento no navegador e execução no computador autorizado. A interface React fica em [web/](web/). Não é necessário um túnel individual ou Docker no computador do usuário para o modelo de conexão de saída.
+
+**Prévia local CentralDark:** na raiz do fork, execute `npm run test:centraldark` ou `npm run start:centraldark -- remote --help`. A opção `remote --check` consulta exclusivamente o nosso servidor. A execução remota está bloqueada até a validação do pareamento e da sessão dedicada; não se utiliza a autenticação do serviço original.
 
 **Estado atual:** o pacote publicado, os instaladores automáticos, a autenticação remota e as integrações nas instruções originais abaixo ainda pertencem ao Desktop Commander original. O domínio MCP da CentralDark já existe, mas não está integrado a este fork. Não use o comando previsto como se já estivesse publicado. A integração, o deploy e a validação do pareamento estão pendentes. Os comandos técnicos e identificadores do protocolo permanecem em inglês por compatibilidade.
 

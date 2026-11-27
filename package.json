@@ -1,32 +1,32 @@
 {
-  "name": "@wonderwhy-er/desktop-commander",
+  "name": "@centraldark/desktop-commander",
   "version": "0.3.3",
-  "description": "MCP server for terminal operations and file editing",
+  "description": "CentralDark Desktop Commander MCP - conexao remota",
   "mcpName": "io.github.wonderwhy-er/desktop-commander",
   "license": "MIT",
   "author": "Eduards Ruzga",
-  "homepage": "https://github.com/wonderwhy-er/DesktopCommanderMCP",
+  "homepage": "https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wonderwhy-er/DesktopCommanderMCP.git"
+    "url": "https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP.git"
   },
-  "bugs": "https://github.com/wonderwhy-er/DesktopCommanderMCP/issues",
+  "bugs": "https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/issues",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
   },
   "bin": {
-    "desktop-commander": "dist/index.js",
-    "setup": "dist/setup-claude-server.js",
-    "remove": "dist/uninstall-claude-server.js"
+    "desktop-commander": "centraldark/cli.mjs"
   },
   "files": [
     "dist",
     "logo.png",
-    "testemonials"
+    "testemonials",
+    "centraldark/cli.mjs",
+    "centraldark/remote-config.mjs"
   ],
   "scripts": {
-    "postinstall": "node dist/track-installation.js && node dist/npm-scripts/verify-ripgrep.js || node -e \"process.exit(0)\"",
+    "postinstall": "node dist/npm-scripts/verify-ripgrep.js || node -e \"process.exit(0)\"",
     "open-chat": "open -n /Applications/Claude.app",
     "device:install": "cd src/remote-device && npm install",
     "device:start": "tsx src/remote-device/device.ts",
@@ -70,7 +70,9 @@
     "logs:export": "npm run build && node scripts/export-fuzzy-logs.js",
     "count-tokens": "npm run build && node scripts/count-tokens.js",
     "count-tokens:json": "npm run build && node scripts/count-tokens.js --json",
-    "device:start:local": "npm run build && DC_ENV=development MCP_SERVER_URL=http://mcp.localhost:3007 npm run device:start:dev"
+    "device:start:local": "npm run build && DC_ENV=development MCP_SERVER_URL=http://mcp.localhost:3007 npm run device:start:dev",
+    "start:centraldark": "node centraldark/cli.mjs",
+    "test:centraldark": "node --test centraldark/test/*.test.mjs"
   },
   "publishConfig": {
     "access": "public"
@@ -97,7 +99,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@opendocsg/pdf2md": "0.3.4",
-    "@supabase/supabase-js": "^2.89.0",
+    "@supabase/supabase-js": "2.90.0",
     "@tiptap/core": "^3.31.4",
     "@tiptap/extension-image": "^3.31.4",
     "@tiptap/extension-table": "^3.31.4",
@@ -164,5 +166,6 @@
     },
     "proxy-addr": "^2.0.8",
     "argparse": "^2.0.1"
-  }
+  },
+  "private": true
 }
