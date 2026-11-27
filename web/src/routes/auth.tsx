@@ -1,0 +1,233 @@
+import { finishAuth } from "@/lib/return-to";
+import { useEffect, useState } from "react";
+import { LockKeyhole } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+
+
+export default function PaginaAcesso() {
+  const [modo, setModo] = useState<"entrar" | "criar">("entrar");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+
+  // Callback OAuth / confirmação de e-mail: quando a sessão existir, retoma o pareamento.
+  useEffect(() => {
+    const renovar = new URLSearchParams(window.location.search).get("renovar") === "1";
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      // A sala pode ter rejeitado a sessão server-side. Em modo de renovação,
+      // encerra apenas a sessão local para impedir o loop /mcp-autorizar → /auth.
+      if (renovar) {
+        await supabase.auth.signOut({ scope: "local" });
+        return;
+      }
+      finishAuth();
+    });
+    const { data } = supabase.auth.onAuthStateChange((evento, sessao) => {
+      if (evento === "SIGNED_IN" && sessao) finishAuth();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [navegar]);
+
+  // O GoTrue pode retornar HTTP 400/validation_failed para parâmetros inválidos.
+  // Não confundir validação com indisponibilidade nem revelar existência de contas.
+  async function enviar(evento: React.FormEvent) {
+    evento.preventDefault();
+    setErro(null);
+    setAviso(null);
+
+    const emailNormalizado = email.trim();
+    if (emailNormalizado.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
+      setErro("Confira o formato do e-mail antes de continuar.");
+      return;
+    }
+    if (senha.length < 6) {
+      setErro("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+
+    setOcupado(true);
+    try {
+      if (modo === "criar") {
+        const { data, error } = await supabase.auth.signUp({
+          email: emailNormalizado,
+          password: senha,
+          options: { emailRedirectTo: window.location.origin + "/auth/callback" },
+        });
+        if (error) {
+          setErro(
+            error.code === "validation_failed"
+              ? "Os dados enviados não passaram na validação. Confira e-mail e senha."
+              : "Não foi possível criar a conta. Confira os dados e tente novamente.",
+          );
+          return;
+        }
+        if (!data.session) {
+          setAviso(
+            "Conta criada. Confirme o e-mail que acabamos de enviar para você e depois entre.",
+          );
+          setModo("entrar");
+        }
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailNormalizado,
+        password: senha,
+      });
+      if (error) {
+        if (error.code === "validation_failed") {
+          setErro("Dados de acesso em formato inválido. Confira e-mail e senha.");
+        } else if (error.code === "email_not_confirmed") {
+          setErro("Confirme seu e-mail para continuar.");
+        } else if (error.code === "over_request_rate_limit") {
+          setErro("Muitas tentativas. Aguarde antes de tentar novamente.");
+        } else {
+          setErro("Não foi possível entrar com esses dados. Confira e tente novamente.");
+        }
+      }
+    } catch {
+      setErro("Não foi possível concluir a autenticação. Tente novamente mais tarde.");
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function esqueci() {
+    setErro(null);
+    setAviso(null);
+    if (!email) {
+      setErro("Digite seu e-mail acima primeiro.");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      setErro(error.message);
+      return;
+    }
+    setAviso("Enviamos um link para criar uma nova senha.");
+  }
+
+  async function entrarGoogle() {
+    setOcupado(true);
+    setErro(null);
+    setAviso(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) {
+      setErro("Não foi possível concluir o acesso com Google.");
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <main className="grid min-h-dvh place-items-center px-4 pb-44 pt-16">
+      <section className="panel-gold w-full max-w-md p-7">
+        <LockKeyhole className="size-6 text-gold" />
+        <p className="mt-5 font-mono text-[10px] tracking-[0.2em] text-gold uppercase">
+          ACESSO AO MCP
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold">
+          {modo === "entrar" ? "Entrar na CentralDark" : "Criar conta"}
+        </h1>
+
+        <div
+          className="mt-6 grid grid-cols-2 gap-2 rounded-lg border border-border p-1"
+          role="tablist"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={modo === "entrar"}
+            onClick={() => {
+              setModo("entrar");
+              setErro(null);
+            }}
+            className={`rounded-md px-3 py-2 text-sm ${modo === "entrar" ? "bg-gold/15 text-gold" : "text-muted-foreground"}`}
+          >
+            Entrar
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={modo === "criar"}
+            onClick={() => {
+              setModo("criar");
+              setErro(null);
+            }}
+            className={`rounded-md px-3 py-2 text-sm ${modo === "criar" ? "bg-gold/15 text-gold" : "text-muted-foreground"}`}
+          >
+            Criar conta
+          </button>
+        </div>
+
+        <form onSubmit={enviar} className="mt-6 space-y-4">
+          <Input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="E-mail"
+            aria-label="E-mail"
+          />
+          <Input
+            type="password"
+            required
+            minLength={6}
+            autoComplete={modo === "criar" ? "new-password" : "current-password"}
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            placeholder="Senha (mínimo 6 caracteres)"
+            aria-label="Senha"
+          />
+          {erro ? (
+            <p role="alert" className="text-sm text-destructive">
+              {erro}
+            </p>
+          ) : null}
+          {aviso ? (
+            <p role="status" className="text-sm text-neon-green">
+              {aviso}
+            </p>
+          ) : null}
+          <Button type="submit" className="w-full" disabled={ocupado}>
+            {ocupado ? "Aguarde…" : modo === "entrar" ? "Entrar" : "Criar conta e entrar"}
+          </Button>
+        </form>
+        {modo === "entrar" ? (
+          <button
+            type="button"
+            onClick={esqueci}
+            className="mt-3 text-xs text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Esqueci minha senha
+          </button>
+        ) : null}
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">ou</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={entrarGoogle}
+          disabled={ocupado}
+        >
+          Continuar com Google
+        </Button>
+      </section>
+    </main>
+  );
+}

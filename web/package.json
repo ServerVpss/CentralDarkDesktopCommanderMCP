@@ -1,0 +1,34 @@
+{
+  "name": "centraldark-mcp-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --experimental-strip-types --test test/return-to.test.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.89.0",
+    "@radix-ui/react-slot": "1.2.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "0.468.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.11",
+    "tailwindcss": "4.1.11",
+    "@vitejs/plugin-react": "4.5.2",
+    "vite": "6.3.5",
+    "typescript": "5.8.3",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6"
+  }
+}
