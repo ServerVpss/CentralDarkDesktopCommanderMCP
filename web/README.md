@@ -26,6 +26,6 @@ A interface aceita somente o projeto Supabase `lyoigsqluyktoclwdaft` e uma chave
 
 A página do fork exige digitar o código do terminal e só exibe confirmação após resposta de sucesso do backend; ignora sucesso e código recebidos por query. Backend de pareamento: PR https://github.com/ServerVpss/CentralDark/pull/2191. Publicação e confirmação humana reais ainda pendentes.
 
-## Login no domínio oficial
+## Login no domínio MCP
 
 A landing em / permanece independente; /auth usa e-mail/senha, cadastro e recuperação existentes. A preferência opcional Lembrar meu e-mail guarda somente o endereço, nunca a senha. A sessão mantém a política do cliente Supabase. O retorno de autenticação consome uma única vez o caminho de consentimento permitido. O botão Google consulta as configurações públicas e fica indisponível enquanto o provedor não estiver habilitado. A validação TypeScript roda antes do build. Para confirmação por e-mail, OAuth e recuperação, conferir os retornos exatos https://mcp.centralldark.com/auth/callback e https://mcp.centralldark.com/reset-password no Supabase. Não alterar Site URL do projeto compartilhado nem conceder papel administrativo ao criar conta.
