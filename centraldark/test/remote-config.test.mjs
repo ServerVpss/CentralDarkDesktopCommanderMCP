@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { SERVER_ORIGIN, SUPABASE_ORIGIN, REMOTE_PROTOCOL, validatePublicKey, validateRemoteInfo, checkRemoteConfig } from "../remote-config.mjs";
 
 const valid = { protocol: REMOTE_PROTOCOL, supabaseUrl: SUPABASE_ORIGIN, supabasePublishableKey: "sb_publishable_example", pairingOnly: true };
@@ -30,7 +31,7 @@ test("consulta somente a origem fixa e não segue redirecionamentos", async () =
   await assert.rejects(() => checkRemoteConfig(async () => new Response("", { status: 404 })), /HTTP 404/);
 });
 test("ajuda em português não inicia rede nem utiliza a CLI original", () => {
-  const run = spawnSync(process.execPath, [new URL("../cli.mjs", import.meta.url).pathname, "remote", "--help"], { encoding: "utf8" });
+  const run = spawnSync(process.execPath, [fileURLToPath(new URL("../cli.mjs", import.meta.url)), "remote", "--help"], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr);
   assert.match(run.stdout, /CentralDark Desktop Commander MCP/);
   assert.match(run.stdout, /pareamento/);
