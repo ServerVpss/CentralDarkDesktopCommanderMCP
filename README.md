@@ -1,4 +1,17 @@
-# Desktop Commander MCP
+# CentralDark Desktop Commander MCP
+
+## CentralDark — distribuição e evolução conjunta
+
+Este fork preserva o projeto original Desktop Commander MCP e sua licença MIT. A implementação CentralDark está na [branch de desenvolvimento](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/tree/centraldark/remote-pairing-web); esta main mantém o índice de distribuição sem declarar que a integração em desenvolvimento já foi incorporada ao seu código.
+
+- [Baixar plugin CentralDark v0.1.5 (ZIP)](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/releases/download/plugin-v0.1.5/CentralDark-Plugin.zip) · [Release de teste](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/releases/tag/plugin-v0.1.5).
+- Endpoint MCP: `https://mcp.centralldark.com/api/mcp`.
+- Pareamento NPX de teste comprovado; instalação/OAuth do plugin, sessão persistente, transporte remoto próprio e Agente Remoto integrado ainda pendentes. Pacote NPM próprio ainda não publicado.
+
+**Regra permanente — conjunto inteiro:** alterações que afetem a integração exigem evolução coordenada do MCP, login/consentimento, página web, plugin completo, pacote NPX completo e Agente Remoto/instalador conforme as dependências reais. Reutilizar o motor existente, alterar somente fontes afetados, reconstruir os artefatos completos, validar a compatibilidade do conjunto, criar releases versionados com hashes e revisão fonte e atualizar este README. Não substituir releases antigos nem distribuir arquivos soltos como pacote completo. Interface em português natural; NPX mantém termos técnicos seguidos de explicação humana. [Contrato canônico da CentralDark](https://github.com/ServerVpss/CentralDark/blob/main/CentralDark-Core/docs/DOMINIOS/API-CENTRALDARK.md#evolucao-conjunta-da-distribuicao).
+
+## Documentação do projeto original
+
 ### Search, update, manage files and run terminal commands with AI
 
 [![npm downloads](https://img.shields.io/npm/dw/@wonderwhy-er/desktop-commander)](https://www.npmjs.com/package/@wonderwhy-er/desktop-commander)
