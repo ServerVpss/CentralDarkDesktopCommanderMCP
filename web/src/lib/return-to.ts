@@ -76,3 +76,46 @@ export function oauthCompletionReceipt(result: {consent_receipt?: unknown; conse
     return null;
   return {receipt, expiresAt};
 }
+
+
+// Client identity and callback type are separate from the browser OS. The Codex
+// CIMD is shared by the CLI and desktop; do not launch a desktop app automatically
+// merely because the loopback client or the browser is running on Windows.
+export function oauthClientPresentation(request: URLSearchParams): {name: string; kind: "web" | "native" | "unknown"; appUrl?: string} {
+  const fallback = {name: request.get("client_name") || request.get("client_id") || "Cliente MCP", kind: "unknown" as const};
+  if (request.getAll("client_id").length !== 1 || request.getAll("redirect_uri").length !== 1) return fallback;
+  try {
+    const client = new URL(request.get("client_id") || "");
+    const callback = new URL(request.get("redirect_uri") || "");
+    if (client.origin !== "https://chatgpt.com" || client.username || client.password || client.hash) return fallback;
+    if (client.pathname === "/oauth/codex/client.json" && !client.search && isLoopbackOAuthCallback(callback.href))
+      return {name: "Codex", kind: "native", appUrl: "codex://settings"};
+    const stable = client.pathname === "/oauth/client.json" && callback.pathname === "/connector_platform_oauth_redirect";
+    const specific = /^\/oauth\/([A-Za-z0-9_-]+)\/client\.json$/.exec(client.pathname);
+    if (callback.origin === "https://chatgpt.com" && !callback.username && !callback.password && !callback.hash &&
+        (stable || (specific && callback.pathname === "/connector/oauth/" + specific[1])))
+      return {name: "ChatGPT", kind: "web"};
+  } catch { /* Unknown clients retain their registered OAuth redirect. */ }
+  return fallback;
+}
+
+// Preserve the reference for every popup we create, including the manual
+// recovery path. Disown its opener without weakening browser isolation.
+export function reserveOAuthReturnWindow(): Window | null {
+  let popup: Window | null = null;
+  try {
+    popup = window.open("about:blank", "_blank", "popup,width=460,height=320");
+    if (popup) {
+      popup.opener = null;
+      popup.document.title = "CentralDark · Retorno OAuth";
+      popup.document.body.textContent = "CentralDark · Concluindo a autorização no aplicativo...";
+    }
+    return popup;
+  } catch {
+    closeOAuthReturnWindow(popup);
+    return null;
+  }
+}
+export function closeOAuthReturnWindow(popup: Pick<Window, "close"> | null): void {
+  try { popup?.close(); } catch { /* Browser isolation may prevent closing. */ }
+}

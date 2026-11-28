@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt } from "../src/lib/return-to.ts";
+import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow } from "../src/lib/return-to.ts";
 test("continua a solicitação no mesmo domínio",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b&pair_code=1234"),"/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b"));
 test("rejeita redirecionamento externo e caminhos não autorizados",()=>{for(const p of ["https://evil.example/mcp-autorizar?client_id=a","//evil.example/","/auth?next=x","/mcp-autorizar?client_id=a#token","/mcp-autorizar?pair_id=a","/mcp-autorizar?client_id=a&client_id=b"])assert.equal(safePairingPath(p),null);});
 test("não preserva tokens nem parâmetros desconhecidos",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=a&access_token=secret&refresh_token=secret"),"/mcp-autorizar?client_id=a"));
@@ -53,4 +53,42 @@ test("recibo apenas vigente e sem capacidade de autenticação",()=>{
   const now=1000000;const receipt="a".repeat(64);
   assert.deepEqual(oauthCompletionReceipt({consent_receipt:receipt,consent_expires_at:now+300000},now),{receipt,expiresAt:now+300000});
   for(const input of [{},{consent_receipt:"fake",consent_expires_at:now+1},{consent_receipt:receipt,consent_expires_at:now},{consent_receipt:receipt,consent_expires_at:now+999999}]) assert.equal(oauthCompletionReceipt(input,now),null);
+});
+
+test("identifica cliente por CIMD e retorno registrado, não por nome ou Windows",()=>{
+  const info=(id:string,redirect:string,name="ChatGPT")=>oauthClientPresentation(new URLSearchParams({client_id:id,redirect_uri:redirect,client_name:name}));
+  assert.deepEqual(info("https://chatgpt.com/oauth/codex/client.json","http://127.0.0.1:51619/callback"),
+    {name:"Codex",kind:"native",appUrl:"codex://settings"});
+  assert.deepEqual(info("https://chatgpt.com/oauth/client.json?token_endpoint_auth_method=none","https://chatgpt.com/connector_platform_oauth_redirect"),
+    {name:"ChatGPT",kind:"web"});
+  assert.equal(info("https://chatgpt.com/oauth/callback-id/client.json","https://chatgpt.com/connector/oauth/callback-id").kind,"web");
+  for(const [id,redirect] of [
+    ["https://fake.example/oauth/codex/client.json","http://127.0.0.1:51619/callback"],
+    ["https://chatgpt.com/oauth/codex/client.json","https://evil.example/callback"],
+    ["https://chatgpt.com/oauth/client.json","https://evil.example/connector_platform_oauth_redirect"],
+    ["https://chatgpt.com/oauth/callback-id/client.json","https://chatgpt.com/connector/oauth/other"]
+  ]) {
+    const result=info(id,redirect);
+    assert.equal(result.kind,"unknown");
+    assert.equal(result.appUrl,undefined);
+  }
+});
+test("janela auxiliar tem referência rastreável e não ganha acesso ao opener",()=>{
+  const oldWindow=Object.getOwnPropertyDescriptor(globalThis,"window");
+  let closed=0;
+  const popup={opener:{},document:{title:"",body:{textContent:""}},close:()=>{closed++}};
+  Object.defineProperty(globalThis,"window",{configurable:true,value:{open:()=>popup}});
+  try{
+    assert.equal(reserveOAuthReturnWindow(),popup);
+    assert.equal(popup.opener,null);
+    closeOAuthReturnWindow(popup);
+    closeOAuthReturnWindow(popup);
+    assert.equal(closed,2);
+    closeOAuthReturnWindow(null);
+    assert.doesNotThrow(()=>closeOAuthReturnWindow({close:()=>{throw new Error("isolated");}}));
+    Object.defineProperty(globalThis,"window",{configurable:true,value:{open:()=>null}});
+    assert.equal(reserveOAuthReturnWindow(),null);
+  }finally{
+    if(oldWindow)Object.defineProperty(globalThis,"window",oldWindow);else Reflect.deleteProperty(globalThis,"window");
+  }
 });

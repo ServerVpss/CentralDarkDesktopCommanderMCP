@@ -8,7 +8,7 @@
  *  visual a partir do HTML CentralDark em Downloads, sem importar handlers simulados.
  * @pendente prova de autenticacao real, build do host e readback do deploy no mesmo SHA.
  */
-import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt } from "@/lib/return-to";
+import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow } from "@/lib/return-to";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
@@ -84,8 +84,6 @@ export default function AutorizarMcp() {
         if (response.ok && result.ok === true && result.status === "authenticated") {
           alterarEstadoOAuth("authenticated");
           alterarCallbackPendente("");
-          try { janelaRetorno.current?.close(); } catch { /* callback belongs to client */ }
-          janelaRetorno.current = null;
           return;
         }
         if (response.status === 401 || response.status === 403) {
@@ -100,6 +98,21 @@ export default function AutorizarMcp() {
     return () => { ativo = false; abort.abort(); if (timer) clearTimeout(timer); };
   }, [completion]);
 
+  useEffect(() => {
+    if (estadoOAuth !== "authenticated") return;
+    // Never close the callback before the token exchange is confirmed.
+    closeOAuthReturnWindow(janelaRetorno.current);
+    const timer = window.setTimeout(() => {
+      closeOAuthReturnWindow(janelaRetorno.current);
+      janelaRetorno.current = null;
+      // A consent tab opened by another web window can return to its opener.
+      // External native browsers may forbid this; keep the manual option.
+      if (window.opener) {
+        try { window.opener.focus(); window.close(); } catch { /* Manual return remains available. */ }
+      }
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [estadoOAuth]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -123,9 +136,10 @@ export default function AutorizarMcp() {
 
   const clientId = params?.get("client_id") ?? "";
   const dispositivo = clientId === CLIENTE_BRIDGE || clientId === CLIENTE_VSCODE;
+  const apresentacao = oauthClientPresentation(params || new URLSearchParams());
   const nome = dispositivo
     ? (clientId === CLIENTE_BRIDGE ? "CentralDark Remote Bridge" : "CentralDark · Vibe Coding")
-    : (params?.get("client_name") || clientId || "Cliente MCP");
+    : apresentacao.name;
   const sucesso = (confirmado && dispositivo) || estadoOAuth === "authenticated";
   const falha = params?.get("error") || "";
   const scopes = (params?.get("scope") || "mcp").split(/\s+/).filter(Boolean);
@@ -155,17 +169,7 @@ export default function AutorizarMcp() {
     // Reserva a janela no gesto do usuário apenas para o retorno loopback.
     // Clientes HTTPS externos conservam a navegação original.
     if (!dispositivo && isLoopbackOAuthCallback(params.get("redirect_uri") || "")) {
-      try {
-        retorno = window.open("about:blank", "_blank", "popup,width=460,height=320");
-        if (retorno) {
-          retorno.opener = null;
-          retorno.document.title = "CentralDark · Retorno OAuth";
-          retorno.document.body.textContent = "CentralDark · Concluindo a autorização no aplicativo...";
-        }
-      } catch {
-        try { retorno?.close(); } catch { /* popup unavailable */ }
-        retorno = null;
-      }
+      retorno = reserveOAuthReturnWindow();
     }
     try {
       // Reutilizar o Supabase Auth existente, com sessão própria deste domínio.
@@ -207,10 +211,11 @@ export default function AutorizarMcp() {
         alterarEstadoOAuth("pending");
         if (retorno && !retorno.closed) {
           try {
-            retorno.location.replace(destino.toString());
             janelaRetorno.current = retorno;
+            retorno.location.replace(destino.toString());
           } catch {
-            try { retorno.close(); } catch { /* popup unavailable */ }
+            closeOAuthReturnWindow(retorno);
+            janelaRetorno.current = null;
             alterarCallbackPendente(destino.toString());
           }
         } else {
@@ -260,6 +265,17 @@ export default function AutorizarMcp() {
               <p className="text-xs text-muted-foreground">
                 {dispositivo ? "Volte ao terminal para conferir a sessão." : "A sessão OAuth foi emitida pelo servidor. Confira as ferramentas no aplicativo."} Nenhum token é exibido nesta página.
               </p>
+              {!dispositivo && (
+                <>
+                  <p className="text-xs text-muted-foreground">Se a janela auxiliar continuar aberta, pode fechá-la. Se iniciou pelo terminal, retorne ao terminal.</p>
+                  {apresentacao.appUrl && <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
+                    href={apresentacao.appUrl}>Abrir aplicativo ChatGPT (opcional)</a>}
+                  <Button type="button" variant="outline" onClick={() => {
+                    closeOAuthReturnWindow(janelaRetorno.current);
+                    window.close();
+                  }}>Fechar esta tela e voltar ao {nome}</Button>
+                </>
+              )}
             </div>
           ) : completion ? (
             <div role="status" className="space-y-3 py-3 text-center">
@@ -272,8 +288,23 @@ export default function AutorizarMcp() {
               </p>
               {callbackPendente && estadoOAuth === "pending" && (
                 <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
-                  href={callbackPendente} target="_blank" rel="noopener noreferrer"
-                  onClick={() => alterarCallbackPendente("")}>Concluir no aplicativo</a>
+                  href={callbackPendente}
+                  onClick={event => {
+                    const popup = reserveOAuthReturnWindow();
+                    // If the popup is blocked, the original registered link still
+                    // works in this tab. Never retry an already delivered code.
+                    if (!popup) return;
+                    event.preventDefault();
+                    try {
+                      janelaRetorno.current = popup;
+                      popup.location.replace(callbackPendente);
+                      alterarCallbackPendente("");
+                    } catch {
+                      closeOAuthReturnWindow(popup);
+                      janelaRetorno.current = null;
+                      window.location.assign(callbackPendente);
+                    }
+                  }}>Concluir no aplicativo</a>
               )}
               <p className="text-xs text-muted-foreground">O retorno OAuth utiliza o endereço registrado pelo aplicativo. Nenhum código ou token é exibido.</p>
             </div>
@@ -369,7 +400,7 @@ export default function AutorizarMcp() {
               </p>
             </>
           )}
-          <a className="block text-center text-xs text-muted-foreground underline-offset-4 hover:text-gold hover:underline" href="/">Voltar ao MCP</a>
+          {estadoOAuth !== "authenticated" && <a className="block text-center text-xs text-muted-foreground underline-offset-4 hover:text-gold hover:underline" href="/">Voltar ao MCP</a>}
         </div>
       </section>
     </main>
