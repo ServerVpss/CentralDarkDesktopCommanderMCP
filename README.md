@@ -21,19 +21,21 @@ Trabalhe com código e texto, execute processos e automatize tarefas além dos e
 
 ## Conexão remota CentralDark
 
-**Endereço planejado:** [mcp.centralldark.com](https://mcp.centralldark.com).
+**Endpoint MCP:** `https://mcp.centralldark.com/api/mcp`. **Página de conexão:** [mcp.centralldark.com](https://mcp.centralldark.com).
 
-**Comando próprio — pacote privado em preparação, ainda não publicado:**
+[Baixar CentralDark Plugin v0.1.5 (ZIP)](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/releases/download/plugin-v0.1.5/CentralDark-Plugin.zip) · [Release de teste](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/releases/tag/plugin-v0.1.5). A distribuição pelo GitHub foi verificada por download e SHA-256. A instalação e o OAuth do plugin ainda precisam de prova real; o ZIP não instala o motor local.
+
+**Comando próprio planejado — pacote privado, ainda não publicado no NPM:**
 
 ```bash
 npx @centraldark/desktop-commander@latest remote
 ```
 
-A primeira versão terá login com o Supabase existente, confirmação do código de pareamento no navegador e execução no computador autorizado. A interface React fica em [web/](web/). Não é necessário um túnel individual ou Docker no computador do usuário para o modelo de conexão de saída.
+**Prévia local:** na raiz do fork, execute `npm run test:centraldark` ou `npm run start:centraldark -- remote --help`. `remote --check` consulta exclusivamente nosso servidor. `npm run start:centraldark -- remote --pair-test` abre a página de login e consentimento em [web/](web/), preenche o código para conferência e clique explícito, verifica e revoga a sessão temporária. Esse pareamento foi comprovado na Casa (28/11/2026, código de saída 0). Não inicia controle remoto persistente. Sessão de dispositivo persistente, transporte Realtime/MQTT próprio e execução remota pelo novo NPX continuam pendentes. Não se utiliza a sessão do serviço original.
 
-**Prévia local CentralDark:** na raiz do fork, execute `npm run test:centraldark` ou `npm run start:centraldark -- remote --help`. A opção `remote --check` consulta exclusivamente o nosso servidor. Após implantação do backend [PR #2191](https://github.com/ServerVpss/CentralDark/pull/2191) e da interface web, `npm run start:centraldark -- remote --pair-test` comprovará o pareamento e revogará a sessão temporária; não inicia controle remoto. A execução remota está bloqueada até a validação do pareamento e da sessão dedicada; não se utiliza a autenticação do serviço original.
+**Evolução conjunta — conjunto inteiro:** toda mudança que afete a integração deve evoluir os componentes e consumidores necessários do MCP/API, login/consentimento, página web, plugin completo, pacote NPX completo e Agente Remoto/instalador. Reutilizar fontes e motor existentes, gerar artefatos completos a partir das revisões verificadas, conferir compatibilidade do conjunto, publicar novas versões nos Releases com changelog, SHA-256 e origem, e manter este README e o índice da main atualizados. Preservar versões antigas; não reconstruir componentes inalterados sem necessidade. Interface do cliente em português natural; no NPX, termos técnicos seguidos da explicação humana, sem falso sucesso. [Contrato canônico](https://github.com/ServerVpss/CentralDark/blob/main/CentralDark-Core/docs/DOMINIOS/API-CENTRALDARK.md#evolucao-conjunta-da-distribuicao).
 
-**Estado atual:** o pacote publicado, os instaladores automáticos, a autenticação remota e as integrações nas instruções originais abaixo ainda pertencem ao Desktop Commander original. O domínio MCP da CentralDark já existe, mas não está integrado a este fork. Não use o comando previsto como se já estivesse publicado. A integração, o deploy e a validação do pareamento estão pendentes. Os comandos técnicos e identificadores do protocolo permanecem em inglês por compatibilidade.
+**Nota:** os instaladores, integrações, comandos NPM e serviços originais descritos nas seções de referência abaixo pertencem ao Desktop Commander original, não à distribuição própria CentralDark. Não confundir suas credenciais e endpoints.
 
 ## Sumário
 
