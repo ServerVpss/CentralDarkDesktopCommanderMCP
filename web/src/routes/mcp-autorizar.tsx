@@ -6,9 +6,11 @@
  * @implementado consentimento MCP + pareamento do Bridge/Vibe na mesma UI compacta;
  *  codigo vem da solicitacao criada pelo cliente, sem outro store ou segredo no navegador;
  *  visual a partir do HTML CentralDark em Downloads, sem importar handlers simulados.
- * @pendente prova visual do retorno em segundo plano e abertura automatica no navegador real.
+ * @last_delta 2026-11-28: Codex CLI/Desktop CIMD compartilhado; abertura nativa somente opt-in;
+ * fallback confirmado pendente na mesma aba, sem popup adicional.
+ * @pendente prova visual do novo fluxo em navegador real; associação nativa depende do Windows.
  */
-import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground } from "@/lib/return-to";
+import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground, oauthNativeLaunchUrl, deliverOAuthFallbackInCurrentTab } from "@/lib/return-to";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
@@ -48,7 +50,7 @@ export default function AutorizarMcp() {
   const [estadoOAuth, alterarEstadoOAuth] = useState<"pending" | "authenticated" | "unconfirmed">("pending");
   const [callbackPendente, alterarCallbackPendente] = useState("");
   const janelaRetorno = useRef<Window | null>(null);
-  const [retornoAutomatico, alterarRetornoAutomatico] = useState(true);
+  const [retornoAutomatico, alterarRetornoAutomatico] = useState(false);
   const backgroundAttempt = useRef<{url:string; startedAt:number; pending:boolean} | null>(null);
   const backgroundAbort = useRef<AbortController | null>(null);
   const launchAttempt = useRef(false);
@@ -117,7 +119,7 @@ export default function AutorizarMcp() {
 
   useEffect(() => {
     if (estadoOAuth !== "authenticated" || !params) return;
-    const appUrl = oauthClientPresentation(params).appUrl;
+    const appUrl = oauthNativeLaunchUrl(params, retornoAutomatico);
     const closeAfterLeaving = () => {
       // Do not dismiss a visible browser confirmation. A hidden tab after
       // handoff is only a cleanup opportunity, not proof the native app opened.
@@ -130,10 +132,10 @@ export default function AutorizarMcp() {
     const timer = window.setTimeout(() => {
       closeOAuthReturnWindow(janelaRetorno.current);
       janelaRetorno.current = null;
-      if (appUrl && retornoAutomatico && !launchAttempt.current) {
+      if (appUrl && !launchAttempt.current) {
         launchAttempt.current = true;
         try { window.location.assign(appUrl); } catch { /* Manual link remains available. */ }
-      } else if (!appUrl && window.opener) {
+      } else if (!oauthClientPresentation(params).appUrl && window.opener) {
         try { window.opener.focus(); window.close(); } catch { /* Manual return remains available. */ }
       }
     }, 3000);
@@ -306,11 +308,11 @@ export default function AutorizarMcp() {
               </p>
               {!dispositivo && (
                 <>
-                  <p className="text-xs text-muted-foreground">Se a janela auxiliar continuar aberta, pode fechá-la. Se iniciou pelo terminal, retorne ao terminal.</p>
+                  <p className="text-xs text-muted-foreground">Se iniciou pelo terminal, retorne ao terminal. Se o navegador não fechar esta aba, pode fechá-la manualmente.</p>
                   {apresentacao.appUrl && <>
                     {retornoAutomatico && <p className="text-xs text-muted-foreground">Retorno automático em 3 segundos. Confirme a abertura se o navegador solicitar.</p>}
                     <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
-                      href={apresentacao.appUrl} onClick={() => {launchAttempt.current = true;}}>Abrir aplicativo ChatGPT (alternativa)</a>
+                      href={apresentacao.appUrl} onClick={() => {launchAttempt.current = true;}}>Abrir aplicativo Codex (opcional)</a>
                   </>}
                   <Button type="button" variant="outline" onClick={() => {
                     closeOAuthReturnWindow(janelaRetorno.current);
@@ -334,6 +336,14 @@ export default function AutorizarMcp() {
                   onClick={event => {
                     callbackDeliveryPending.current = true;
                     backgroundAttempt.current = null;
+                    // The background request may be blocked by browser loopback
+                    // permissions. The server still reports pending, so the user
+                    // may complete the exact registered callback in this same tab.
+                    if (params && canDeliverOAuthInBackground(params, new URL(callbackPendente))) {
+                      event.preventDefault();
+                      deliverOAuthFallbackInCurrentTab(params, new URL(callbackPendente));
+                      return;
+                    }
                     const popup = reserveOAuthReturnWindow();
                     // If the popup is blocked, the original registered link still
                     // works in this tab. Never retry an already delivered code.
@@ -348,7 +358,7 @@ export default function AutorizarMcp() {
                       janelaRetorno.current = null;
                       window.location.assign(callbackPendente);
                     }
-                  }}>Concluir no aplicativo</a>
+                  }}>{apresentacao.appUrl === "codex://settings" ? "Concluir nesta aba (sem janela auxiliar)" : "Concluir no aplicativo"}</a>
               )}
               <p className="text-xs text-muted-foreground">O retorno OAuth utiliza o endereço registrado pelo aplicativo. Nenhum código ou token é exibido.</p>
             </div>
@@ -433,7 +443,7 @@ export default function AutorizarMcp() {
                   <label className="flex items-start gap-2 text-xs text-muted-foreground">
                     <input type="checkbox" className="mt-0.5" checked={retornoAutomatico}
                       onChange={event => alterarRetornoAutomatico(event.target.checked)} disabled={enviando}/>
-                    Abrir o aplicativo automaticamente após autenticar (desmarque se iniciou pelo terminal).
+                    Se iniciou pelo Codex Desktop, marque para abrir o aplicativo automaticamente após autenticar. Pelo terminal, deixe desmarcado.
                   </label>
                 )}
                 <div className="grid grid-cols-2 gap-2">

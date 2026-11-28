@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground } from "../src/lib/return-to.ts";
+import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground, oauthNativeLaunchUrl, deliverOAuthFallbackInCurrentTab } from "../src/lib/return-to.ts";
 test("continua a solicitação no mesmo domínio",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b&pair_code=1234"),"/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b"));
 test("rejeita redirecionamento externo e caminhos não autorizados",()=>{for(const p of ["https://evil.example/mcp-autorizar?client_id=a","//evil.example/","/auth?next=x","/mcp-autorizar?client_id=a#token","/mcp-autorizar?pair_id=a","/mcp-autorizar?client_id=a&client_id=b"])assert.equal(safePairingPath(p),null);});
 test("não preserva tokens nem parâmetros desconhecidos",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=a&access_token=secret&refresh_token=secret"),"/mcp-autorizar?client_id=a"));
@@ -117,4 +117,34 @@ test("transporte invisível omite credenciais, referrer e redirect; não interpr
     await assert.rejects(()=>deliverOAuthInBackground(request,new URL("https://evil.invalid/callback?code=fixture"),signal),/NOT_ALLOWED/);
     assert.equal(calls.length,1);
   } finally {globalThis.fetch=original;}
+});
+
+
+test("CIMD compartilhado não dispara abertura nativa sem escolha explícita",()=>{
+  const request=new URLSearchParams({client_id:"https://chatgpt.com/oauth/codex/client.json",redirect_uri:"http://127.0.0.1:52853/callback",state:"fixture"});
+  assert.equal(oauthNativeLaunchUrl(request),undefined);
+  assert.equal(oauthNativeLaunchUrl(request,false),undefined);
+  assert.equal(oauthNativeLaunchUrl(request,true),"codex://settings");
+  const unknown=new URLSearchParams(request);unknown.set("client_id","mcp_unknown");
+  assert.equal(oauthNativeLaunchUrl(unknown,true),undefined);
+});
+
+test("fallback Codex navega na mesma aba, sem janela auxiliar e sem substituir callback",()=>{
+  const request=new URLSearchParams({client_id:"https://chatgpt.com/oauth/codex/client.json",redirect_uri:"http://127.0.0.1:52853/callback",state:"fixture"});
+  const destination=new URL("http://127.0.0.1:52853/callback?code=fixture&state=fixture");
+  const oldWindow=Object.getOwnPropertyDescriptor(globalThis,"window");
+  const navigations:string[]=[];
+  let opens=0;
+  Object.defineProperty(globalThis,"window",{configurable:true,value:{location:{replace:(url:string)=>navigations.push(url)},open:()=>{opens++;throw Error("UNEXPECTED_POPUP");}}});
+  try {
+    assert.equal(deliverOAuthFallbackInCurrentTab(request,destination),true);
+    assert.deepEqual(navigations,[destination.href]);
+    for(const url of [destination.href.replace("52853","52854"),destination.href.replace("state=fixture","state=wrong"),destination.href.replace("127.0.0.1","example.invalid")]){
+      assert.equal(deliverOAuthFallbackInCurrentTab(request,new URL(url)),false);
+    }
+    assert.equal(opens,0);
+    assert.equal(navigations.length,1);
+  } finally {
+    if(oldWindow)Object.defineProperty(globalThis,"window",oldWindow);else Reflect.deleteProperty(globalThis,"window");
+  }
 });

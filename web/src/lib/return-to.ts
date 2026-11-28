@@ -80,7 +80,7 @@ export function oauthCompletionReceipt(result: {consent_receipt?: unknown; conse
 
 // Client identity and callback type are separate from the browser OS. The Codex
 // CIMD is shared by CLI and desktop; the consent screen offers a return
-// preference (desktop by default, terminal users can opt out).
+// preference. CLI and desktop share the same CIMD, so native launch is opt-in.
 export function oauthClientPresentation(request: URLSearchParams): {name: string; kind: "web" | "native" | "unknown"; appUrl?: string} {
   const fallback = {name: request.get("client_name") || request.get("client_id") || "Cliente MCP", kind: "unknown" as const};
   if (request.getAll("client_id").length !== 1 || request.getAll("redirect_uri").length !== 1) return fallback;
@@ -97,6 +97,20 @@ export function oauthClientPresentation(request: URLSearchParams): {name: string
       return {name: "ChatGPT", kind: "web"};
   } catch { /* Unknown clients retain their registered OAuth redirect. */ }
   return fallback;
+}
+
+// Shared Codex CIMD does not prove which surface started this request.
+export function oauthNativeLaunchUrl(request: URLSearchParams, optedIn = false): string | undefined {
+  return optedIn ? oauthClientPresentation(request).appUrl : undefined;
+}
+
+// A confirmed pending callback may need a user-initiated navigation when
+// browser loopback access blocks fetch. Use the same tab for known Codex
+// callbacks, never create another window and never substitute the redirect.
+export function deliverOAuthFallbackInCurrentTab(request: URLSearchParams, destination: URL): boolean {
+  if (!canDeliverOAuthInBackground(request, destination)) return false;
+  window.location.replace(destination.href);
+  return true;
 }
 
 // Preserve the reference for every popup we create, including the manual
