@@ -24,7 +24,7 @@ Pendências antes da troca de domínio: validar e permitir exclusivamente a nova
 
 A interface aceita somente o projeto Supabase `lyoigsqluyktoclwdaft` e uma chave pública. A chave deve ser injetada pelo ambiente da publicação. Não copie sessões do cockpit para o dispositivo. O backend ainda deve implementar e testar o protocolo de pareamento e o isolamento das sessões antes de liberar execução remota.
 
-A página do fork exige digitar o código do terminal e só exibe confirmação após resposta de sucesso do backend; ignora sucesso e código recebidos por query. Backend de pareamento: PR https://github.com/ServerVpss/CentralDark/pull/2191. Publicação e confirmação humana reais ainda pendentes.
+A página do fork preenche o código exibido pelo NPX a partir de um fragmento local restrito ao pedido Bridge válido, remove o fragmento da barra de endereço e pede conferência com o terminal e clique explícito. O retorno após login conserva esse pedido na sessão da aba e o consome uma vez. A digitação continua disponível como fallback. Ignora sucesso e código recebidos por query; só exibe confirmação após resposta de sucesso do backend. Nenhum segredo de posse ou token é levado ao navegador pelo NPX. Backend de pareamento: PR https://github.com/ServerVpss/CentralDark/pull/2191. Publicação e confirmação humana reais ainda pendentes.
 
 ## Login no domínio MCP
 

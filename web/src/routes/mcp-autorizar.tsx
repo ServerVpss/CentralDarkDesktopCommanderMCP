@@ -8,7 +8,7 @@
  *  visual a partir do HTML CentralDark em Downloads, sem importar handlers simulados.
  * @pendente prova de autenticacao real, build do host e readback do deploy no mesmo SHA.
  */
-import { rememberPairing } from "@/lib/return-to";
+import { rememberPairing, pairingCodeFromFragment } from "@/lib/return-to";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
@@ -48,11 +48,17 @@ export default function AutorizarMcp() {
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     alterarParams(query);
+    const code = pairingCodeFromFragment(query, window.location.hash);
+    const resumePath = window.location.pathname + window.location.search + (code ? "#pair_code="+code : "");
+    if (code) {
+      alterarPairCode(code);
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
     if (!query.get("client_id")) return;
     let ativo = true;
     supabase.auth.getSession().then(({data, error}) => {
       if (ativo && (error || !data.session)) {
-        rememberPairing(window.location.pathname + window.location.search);
+        rememberPairing(resumePath);
         window.location.replace("/auth");
       }
     }).catch(() => { if (ativo) alterarErroEnvio("Não foi possível verificar sua sessão. Entre novamente."); });
@@ -67,10 +73,11 @@ export default function AutorizarMcp() {
   const sucesso = confirmado && dispositivo;
   const falha = params?.get("error") || "";
   const scopes = (params?.get("scope") || "mcp").split(/\s+/).filter(Boolean);
-  const autorizado = dispositivo
-    ? Boolean(params?.get("pair_id") && params?.get("pair_nonce") && /^[A-F0-9]{4}-[A-F0-9]{4}$/.test(pairCode.trim()))
+  const pedidoCompleto = dispositivo
+    ? Boolean(params?.get("pair_id") && params?.get("pair_nonce"))
     : Boolean(clientId && params?.get("redirect_uri") && params?.get("response_type") === "code"
       && params?.get("code_challenge") && params?.get("code_challenge_method") === "S256");
+  const autorizado = pedidoCompleto && (!dispositivo || /^[A-F0-9]{4}-[A-F0-9]{4}$/.test(pairCode.trim()));
   const titulo = dispositivo ? "Confirmar pareamento" : "Autorizar acesso MCP";
 
   async function enviarConsentimento(event: FormEvent<HTMLFormElement>) {
@@ -94,7 +101,9 @@ export default function AutorizarMcp() {
       const { data, error } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (error || !token) {
-        rememberPairing(window.location.pathname + window.location.search);
+        const fragment = "#pair_code="+pairCode.trim();
+        const code = pairingCodeFromFragment(params, fragment);
+        rememberPairing(window.location.pathname + window.location.search + (code ? fragment : ""));
         window.location.replace("/auth");
         return;
       }
@@ -230,7 +239,7 @@ export default function AutorizarMcp() {
                 ))}
                 {dispositivo && (
                   <label className="block text-xs">
-                    Digite o código apresentado no terminal
+                    Confira o código apresentado no terminal antes de confirmar
                     <input type="text" name="pair_code" autoComplete="off" required
                       maxLength={9} pattern="[A-F0-9]{4}-[A-F0-9]{4}"
                       value={pairCode} onChange={e => alterarPairCode(e.target.value.toUpperCase())}
@@ -238,7 +247,7 @@ export default function AutorizarMcp() {
                       placeholder="0000-0000" />
                   </label>
                 )}
-                {!autorizado && (
+                {!pedidoCompleto && (
                   <p role="alert" className="text-xs text-destructive">
                     Solicitação incompleta. Reabra a conexão pelo aplicativo solicitante.
                   </p>

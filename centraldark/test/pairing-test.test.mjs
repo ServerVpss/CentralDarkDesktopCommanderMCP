@@ -8,7 +8,7 @@ const secret="S".repeat(32), nonce="N".repeat(32), token="T".repeat(43);
 const consent=SERVER_ORIGIN+"/mcp-autorizar?"+new URLSearchParams({client_id:"centraldark.remote-bridge",pair_id:pair,pair_nonce:nonce,scope:"mcp",auth_method:"code"});
 test("rejeita origem externa, código na URL, posse e escopo indevido",()=>{
   assert.equal(validateConsentLocation(consent,pair),consent);
-  for(const url of [consent.replace(SERVER_ORIGIN,"https://admin.centralldark.com"),consent+"&pair_secret=x",consent+"&pair_code=ABCD-1234",consent+"&pair_id=x",consent.replace("scope=mcp","scope=admin")]){
+  for(const url of [consent.replace(SERVER_ORIGIN,"https://admin.centralldark.com"),consent+"&pair_secret=x",consent+"&pair_code=ABCD-1234",consent+"&pair_id=x",consent+"#pair_code=ABCD-1234",consent.replace("scope=mcp","scope=admin")]){
     assert.throws(()=>validateConsentLocation(url,pair),/autorizad|corresponde/);
   }
 });
@@ -39,7 +39,13 @@ function fixture({badRedirect=false,failCheck=false,failRevoke=false}={}){
 test("fluxo completo confirma e revoga, sem sessão administrativa, sem expor tokens",async()=>{
   const f=fixture();
   assert.deepEqual(await runPairingTest(f.args),{paired:true,revoked:true});
-  assert.deepEqual(f.opens,[consent]);
+  assert.deepEqual(f.opens,[consent+"#pair_code=ABCD-1234"]);
+  const opened=new URL(f.opens[0]);
+  assert.equal(opened.searchParams.has("pair_code"),false);
+  assert.equal(opened.searchParams.has("pair_secret"),false);
+  assert.ok(f.logs.includes(consent));
+  assert.ok(f.logs.includes("Código de pareamento: ABCD-1234"));
+  assert.ok(f.logs.every(l=>!l.includes("#pair_code=")));
   assert.equal(f.calls.filter(([p])=>p==="/device/desktop/session/check").length,2);
   assert.equal(f.calls.at(-2)[0],"/device/devices/self/revoke");
   assert.match(f.logs.at(-1),/^APROVADO/);

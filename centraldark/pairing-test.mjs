@@ -56,10 +56,13 @@ export async function runPairingTest({
   const page=await fetchImpl(authorize,{redirect:"manual",signal:AbortSignal.timeout(10000)});
   if(page.status!==302)throw Error("Página de autorização indisponível (HTTP "+page.status+").");
   const url=validateConsentLocation(page.headers.get("Location"),pair.pair_id);
-  notify("Abra o endereço abaixo, entre na sua conta CentralDark e digite o código do terminal.");
+  // Somente o código exibido ao usuário; nunca o segredo de posse.
+  const browserUrl = new URL(url);
+  browserUrl.hash = "pair_code=" + pair.code;
+  notify("Entre na sua conta CentralDark, confira o código do terminal e clique em Confirmar.");
   notify(url);
   notify("Código de pareamento: "+pair.code);
-  try { await openBrowser(url); } catch { notify("Não foi possível abrir o navegador automaticamente. Use o endereço acima."); }
+  try { await openBrowser(browserUrl.href); } catch { notify("Não foi possível abrir o navegador automaticamente. Use o endereço acima e digite o código."); }
   let session;
   while(monotonicNow()<deadline){
     await delay(2000);
