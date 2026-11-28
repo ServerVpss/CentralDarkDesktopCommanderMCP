@@ -3,4 +3,6 @@
 skip = .git*,*.svg,package-lock.json,*.css,.codespellrc
 check-hidden = true
 # ignore-regex = 
-ignore-words-list = fo
+# Valid Brazilian Portuguese words reported by the English dictionary (PR #1).
+# Keep the upstream spellcheck enabled; do not exclude translated files.
+ignore-words-list = fo,administrativo,alternar,analise,argumentos,atual,automatize,caractere,caracteres,cliente,comando,comandos,considere,conter,controle,controles,copie,diagramas,eles,erro,erros,exata,ignora,inicial,instale,limite,meu,momento,nome,registre,ser,utiliza

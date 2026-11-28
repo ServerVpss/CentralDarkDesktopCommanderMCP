@@ -1,156 +1,184 @@
-# Desktop Commander MCP
-### Search, update, manage files and run terminal commands with AI
+# CentralDark Desktop Commander MCP
 
-[![npm downloads](https://img.shields.io/npm/dw/@wonderwhy-er/desktop-commander)](https://www.npmjs.com/package/@wonderwhy-er/desktop-commander)
-[![AgentAudit Verified](https://agentaudit.dev/api/badge/desktop-commander)](https://agentaudit.dev/skills/desktop-commander)
-[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/wonderwhy-er/DesktopCommanderMCP)](https://archestra.ai/mcp-catalog/wonderwhy-er__desktopcommandermcp)
-[![smithery badge](https://smithery.ai/badge/@wonderwhy-er/desktop-commander)](https://smithery.ai/server/@wonderwhy-er/desktop-commander)
+### Pesquise, atualize e gerencie arquivos e execute comandos no terminal com IA
+
+> Fork do [Desktop Commander MCP](https://github.com/wonderwhy-er/DesktopCommanderMCP), de Eduards Ruzga e colaboradores, sob licença MIT. Mantemos a compatibilidade com o original e as atribuições. Os selos, estatísticas, integrações e depoimentos abaixo são do projeto original, não certificações nem números de uso da CentralDark.
+
+[![downloads NPM (original)](https://img.shields.io/npm/dw/@wonderwhy-er/desktop-commander)](https://www.npmjs.com/package/@wonderwhy-er/desktop-commander)
+[![Verificação AgentAudit (original)](https://agentaudit.dev/api/badge/desktop-commander)](https://agentaudit.dev/skills/desktop-commander)
+[![Índice de confiança (original)](https://archestra.ai/mcp-catalog/api/badge/quality/wonderwhy-er/DesktopCommanderMCP)](https://archestra.ai/mcp-catalog/wonderwhy-er__desktopcommandermcp)
+[![Selo Smithery (original)](https://smithery.ai/badge/@wonderwhy-er/desktop-commander)](https://smithery.ai/server/@wonderwhy-er/desktop-commander)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://www.buymeacoffee.com/wonderwhyer)
 
 
 [![Discord](https://img.shields.io/badge/Join%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/kQ27sNnZr7)
 
-
-Work with code and text, run processes, and automate tasks, going far beyond other AI editors - while using host client subscriptions instead of API token costs.
+Trabalhe com código e texto, execute processos e automatize tarefas além dos editores de IA tradicionais, utilizando os recursos do cliente de IA em vez de depender necessariamente de créditos de API.
 
 <a href="https://glama.ai/mcp/servers/zempur9oh4">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/zempur9oh4/badge" alt="Desktop Commander MCP" />
 </a>
 
-## Table of Contents
-- [Features](#features)
-- [How to install](#how-to-install)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [File Preview UI & Markdown Editor](#file-preview-ui--markdown-editor)
-- [Handling Long-Running Commands](#handling-long-running-commands)
-- [Work in Progress and TODOs](#roadmap)
-- [Sponsors and Supporters](#support-desktop-commander)
-- [Website](#website)
-- [Media](#media)
-- [Testimonials](#testimonials)
-- [Frequently Asked Questions](#frequently-asked-questions)
-- [Contributing](#contributing)
-- [License](#license)
+## Conexão remota CentralDark
 
-All of your AI development tools in one place.
-Desktop Commander puts all dev tools in one chat.
-Execute long-running terminal commands on your computer and manage processes through Model Context Protocol (MCP). Built on top of [MCP Filesystem Server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) to provide additional search and replace file editing capabilities.
+**Endereço planejado:** [mcp.centralldark.com](https://mcp.centralldark.com).
 
-## Features
+**Comando próprio — pacote privado em preparação, ainda não publicado:**
 
-- **Remote AI Control** - Use Desktop Commander from ChatGPT, Claude web, and other AI services via [Remote MCP](https://mcp.desktopcommander.app)
-- **File Preview UI** - Visual file previews in Claude Desktop with rendered markdown, inline images, expandable content, built-in markdown editor, and quick "Open in folder" access
-- **Enhanced terminal commands with interactive process control**
-- **Execute code in memory (Python, Node.js, R) without saving files**
-- **Instant data analysis - just ask to analyze CSV/JSON/Excel files**
-- **Native Excel file support** - Read, write, edit, and search Excel files (.xlsx, .xls, .xlsm) without external tools
-- **PDF support** - Read PDFs with text extraction, create new PDFs from markdown, modify existing PDFs
-- **DOCX support** - Read, create, edit, and search Word documents (.docx) with surgical XML editing and markdown-to-DOCX conversion
-- **Interact with running processes (SSH, databases, development servers)**
-- Execute terminal commands with output streaming
-- Command timeout and background execution support
-- Process management (list and kill processes)
-- Session management for long-running commands
-- **Process output pagination** - Read terminal output with offset/length controls to prevent context overflow
-- Server configuration management:
-  - Get/set configuration values
-  - Update multiple settings at once
-  - Dynamic configuration changes without server restart
-- Full filesystem operations:
-  - Read/write files (text, Excel, PDF, DOCX)
-  - Create/list directories
-  - **Recursive directory listing** with configurable depth and context overflow protection for large folders
-  - Move files/directories
-  - Search files and content (including Excel content)
-  - Get file metadata
-  - **Negative offset file reading**: Read from end of files using negative offset values (like Unix tail)
-- Code editing capabilities:
-  - Surgical text replacements for small changes
-  - Full file rewrites for major changes
-  - Multiple file support
-  - Pattern-based replacements
-  - vscode-ripgrep based recursive code or text search in folders
-- Local tool-call history and audit logs:
-  - Tool calls and arguments are recorded locally on the machine running Desktop Commander
-  - Recent call history with bounded output previews is available through `get_recent_tool_calls`
-  - Size-based rotation/trimming keeps the active history files bounded
-- Safety guardrails (not a sandbox — see [SECURITY.md](SECURITY.md)):
-  - Symlink traversal prevention on file operations
-  - Command blocklist for accidental execution
-  - [Docker isolation](#option-6-docker-installation--auto-updates-no-nodejs-required) for complete isolation
+```bash
+npx @centraldark/desktop-commander@latest remote
+```
 
-## How to install
+A primeira versão terá login com o Supabase existente, confirmação do código de pareamento no navegador e execução no computador autorizado. A interface React fica em [web/](web/). Não é necessário um túnel individual ou Docker no computador do usuário para o modelo de conexão de saída.
 
-For ChatGPT, Claude web, and other remote clients, see the [Remote device launchers](scripts/remote/README.md). They install Node.js when missing and run Desktop Commander Remote on macOS, Linux, or Windows.
+**Prévia local CentralDark:** na raiz do fork, execute `npm run test:centraldark` ou `npm run start:centraldark -- remote --help`. A opção `remote --check` consulta exclusivamente o nosso servidor. Após implantação do backend [PR #2191](https://github.com/ServerVpss/CentralDark/pull/2191) e da interface web, `npm run start:centraldark -- remote --pair-test` comprovará o pareamento e revogará a sessão temporária; não inicia controle remoto. A execução remota está bloqueada até a validação do pareamento e da sessão dedicada; não se utiliza a autenticação do serviço original.
 
-### Install in Claude Desktop
+**Estado atual:** o pacote publicado, os instaladores automáticos, a autenticação remota e as integrações nas instruções originais abaixo ainda pertencem ao Desktop Commander original. O domínio MCP da CentralDark já existe, mas não está integrado a este fork. Não use o comando previsto como se já estivesse publicado. A integração, o deploy e a validação do pareamento estão pendentes. Os comandos técnicos e identificadores do protocolo permanecem em inglês por compatibilidade.
 
-Desktop Commander offers multiple installation methods for Claude Desktop.
+## Sumário
 
-> **📋 Update & Uninstall Information:** Options 1, 2, 3, 4, and 6 have automatic updates. Option 5 requires manual updates. See below for details.
+- [Recursos](#features)
+- [Como instalar](#how-to-install)
+- [Primeiros passos](#getting-started)
+- [Uso](#usage)
+- [Prévia de arquivos e editor Markdown](#file-preview-ui--markdown-editor)
+- [Comandos de longa duração](#handling-long-running-commands)
+- [Configuração](#configuration-management)
+- [Roteiro e pendências](#roadmap)
+- [Patrocinadores e apoiadores](#support-desktop-commander)
+- [Site](#website)
+- [Mídia](#media)
+- [Depoimentos](#testimonials)
+- [Perguntas frequentes](#frequently-asked-questions)
+- [Contribuição](#contributing)
+- [Licença](#license)
+
+Todas as ferramentas de desenvolvimento com IA em um só lugar. O Desktop Commander reúne ferramentas de desenvolvimento em uma conversa. Execute comandos de longa duração no seu computador e gerencie processos pelo Model Context Protocol (MCP). Construído sobre o [MCP Filesystem Server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem), acrescenta operações de pesquisa e substituição em arquivos.
+
+<a id="features"></a>
+
+## Recursos
+
+- **Controle remoto com IA** — use o Desktop Commander no ChatGPT, Claude web e outros serviços por meio do [MCP remoto original](https://mcp.desktopcommander.app).
+- **Prévia visual de arquivos** — no Claude Desktop, renderize Markdown, imagens, conteúdo expansível e use o editor Markdown integrado e o acesso rápido à pasta.
+- **Comandos aprimorados de terminal com controle interativo de processos**.
+- **Execute código em memória (Python, Node.js, R) sem salvar arquivos**.
+- **Análise de dados instantânea** — peça análises de CSV, JSON ou Excel.
+- **Suporte nativo a Excel** — leia, escreva, edite e pesquise arquivos .xlsx, .xls e .xlsm sem ferramentas externas.
+- **Suporte a PDF** — extraia texto, crie PDFs a partir de Markdown e modifique PDFs existentes.
+- **Suporte a DOCX** — leia, crie, edite e pesquise documentos Word, com edição pontual de XML e conversão de Markdown para DOCX.
+- **Interaja com processos ativos** (SSH, bancos de dados, servidores de desenvolvimento).
+- Execute comandos com transmissão da saída em tempo real.
+- Suporte a tempo limite e execução em segundo plano.
+- Gerenciamento de processos (listar e encerrar).
+- Gerenciamento de sessões de comandos de longa duração.
+- **Paginação da saída de processos** — use deslocamento e comprimento para evitar estourar o contexto.
+- Gerenciamento da configuração do servidor:
+  - Consulte e altere valores.
+  - Atualize várias configurações.
+  - Altere configurações dinamicamente sem reiniciar o servidor.
+- Operações completas do sistema de arquivos:
+  - Leia e escreva arquivos de texto, Excel, PDF e DOCX.
+  - Crie e liste diretórios.
+  - **Listagem recursiva** com profundidade configurável e proteção contra excesso de contexto em pastas grandes.
+  - Mova arquivos e diretórios.
+  - Pesquise arquivos e conteúdo, inclusive Excel.
+  - Consulte metadados de arquivos.
+  - **Leitura com deslocamento negativo** — leia a partir do fim do arquivo, como o comando Unix tail.
+- Edição de código:
+  - Substituições pontuais para pequenas alterações.
+  - Reescrita integral para mudanças maiores.
+  - Suporte a vários arquivos.
+  - Substituição por padrões.
+  - Busca recursiva de código e texto com vscode-ripgrep.
+- Histórico local e registros de auditoria:
+  - Chamadas e argumentos são registrados na máquina que executa o Desktop Commander.
+  - O histórico recente, com prévias limitadas dos resultados, está disponível em `get_recent_tool_calls`.
+  - Rotação e redução por tamanho limitam os arquivos de histórico ativos.
+- Proteções contra acidentes (não são uma caixa de isolamento; veja [SECURITY.md](SECURITY.md)):
+  - Prevenção de travessia por links simbólicos nas operações de arquivos.
+  - Lista de bloqueio de comandos para reduzir execuções acidentais.
+  - [Isolamento com Docker](#option-6-docker-installation--auto-updates-no-nodejs-required) quando corretamente configurado.
+
+<a id="how-to-install"></a>
+
+## Como instalar
+
+**Instruções de compatibilidade com o projeto original.** Os comandos abaixo usam os pacotes e serviços originais, exceto quando explicitamente identificados como comandos de desenvolvimento do fork.
+
+Para ChatGPT, Claude web e outros clientes remotos, consulte os [inicializadores de dispositivo remoto](scripts/remote/README.md). Eles instalam o Node.js quando necessário e executam o Desktop Commander Remote no macOS, Linux ou Windows.
+
+### Instalar no Claude Desktop
+
+Há vários métodos de instalação para o Claude Desktop.
+
+> **📋 Atualização e desinstalação:** as opções 1, 2, 3, 4 e 6 têm atualização automática conforme o comportamento documentado pelo original. A opção 5 exige atualização manual.
 
 <details>
-<summary><b>Option 1: Install through npx ⭐ Auto-Updates (Requires Node.js)</b></summary>
+<summary><b>Opção 1: instalar pelo npx ⭐ Atualização automática (requer Node.js)</b></summary>
 
-Just run this in terminal:
+Execute no terminal:
+
 ```
 npx @wonderwhy-er/desktop-commander@latest setup
 ```
 
-For debugging mode (allows Node.js inspector connection):
+Para modo de depuração, que permite conectar o inspetor do Node.js:
+
 ```
 npx @wonderwhy-er/desktop-commander@latest setup --debug
 ```
 
-**Command line options during setup:**
-- `--debug`: Enable debugging mode for Node.js inspector
-- `--no-onboarding`: Disable onboarding prompts for new users
+**Opções de linha de comando durante a instalação:**
 
-Restart Claude if running.
+- `--debug`: ativa a depuração pelo inspetor do Node.js.
+- `--no-onboarding`: desativa os avisos introdutórios para novos usuários.
 
-**✅ Auto-Updates:** Yes - automatically updates when you restart Claude  
-**🔄 Manual Update:** Run the setup command again  
-**🗑️ Uninstall:** Run `npx @wonderwhy-er/desktop-commander@latest remove`
+Reinicie o Claude se estiver aberto.
+
+**✅ Atualização automática:** sim, ao reiniciar o Claude.  
+**🔄 Atualização manual:** execute novamente o comando de instalação.  
+**🗑️ Desinstalação:** execute `npx @wonderwhy-er/desktop-commander@latest remove`.
 
 </details>
 
 <details>
-<summary><b>Option 2: Using bash script installer (macOS) ⭐ Auto-Updates (Installs Node.js if needed)</b></summary>
+<summary><b>Opção 2: instalador Bash (macOS) ⭐ Atualização automática (instala Node.js se necessário)</b></summary>
 
 ```
 curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install.sh | bash
 ```
-This script handles all dependencies and configuration automatically.
 
-**✅ Auto-Updates:** Yes  
-**🔄 Manual Update:** Re-run the bash installer command above  
-**🗑️ Uninstall:** Run `npx @wonderwhy-er/desktop-commander@latest remove`
+O script original configura as dependências e a instalação automaticamente. Revise o script antes de executá-lo.
 
-</details>
-
-<details>
-<summary><b>Option 3: Installing via Smithery ⭐ Auto-Updates (Requires Node.js)</b></summary>
-
-1. **Visit:** https://smithery.ai/server/@wonderwhy-er/desktop-commander
-2. **Login to Smithery** if you haven't already
-3. **Select your client** (Claude Desktop) on the right side
-4. **Install with the provided key** that appears after selecting your client
-5. **Restart Claude Desktop**
-
-**✅ Auto-Updates:** Yes - automatically updates when you restart Claude  
-**🔄 Manual Update:** Visit the Smithery page and reinstall  
+**✅ Atualização automática:** sim.  
+**🔄 Atualização manual:** execute novamente o instalador Bash acima.  
+**🗑️ Desinstalação:** execute `npx @wonderwhy-er/desktop-commander@latest remove`.
 
 </details>
 
 <details>
-<summary><b>Option 4: Add to claude_desktop_config manually ⭐ Auto-Updates (Requires Node.js)</b></summary>
+<summary><b>Opção 3: instalar pelo Smithery ⭐ Atualização automática (requer Node.js)</b></summary>
 
-Add this entry to your claude_desktop_config.json:
+1. **Acesse:** https://smithery.ai/server/@wonderwhy-er/desktop-commander
+2. **Entre no Smithery**, se necessário.
+3. **Selecione seu cliente** (Claude Desktop) à direita.
+4. **Instale com a chave fornecida** depois de selecionar o cliente.
+5. **Reinicie o Claude Desktop**.
 
-- On Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- On Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- On Linux: `~/.config/Claude/claude_desktop_config.json`
+**✅ Atualização automática:** sim, ao reiniciar o Claude.  
+**🔄 Atualização manual:** acesse a página do Smithery e reinstale.
+
+</details>
+
+<details>
+<summary><b>Opção 4: adicionar manualmente ao claude_desktop_config ⭐ Atualização automática (requer Node.js)</b></summary>
+
+Adicione a entrada ao arquivo claude_desktop_config.json:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -165,57 +193,77 @@ Add this entry to your claude_desktop_config.json:
   }
 }
 ```
-Restart Claude if running.
 
-**✅ Auto-Updates:** Yes - automatically updates when you restart Claude  
-**🔄 Manual Update:** Run the setup command again  
-**🗑️ Uninstall:** Run `npx @wonderwhy-er/desktop-commander@latest remove` or remove the entry from your claude_desktop_config.json
+Reinicie o Claude se estiver aberto.
+
+**✅ Atualização automática:** sim, ao reiniciar o Claude.  
+**🔄 Atualização manual:** execute novamente o comando de instalação.  
+**🗑️ Desinstalação:** execute `npx @wonderwhy-er/desktop-commander@latest remove` ou remova a entrada da configuração do Claude.
 
 </details>
 
 <details>
-<summary><b>Option 5: Checkout locally ❌ Manual Updates (Requires Node.js)</b></summary>
+<summary><b>Opção 5: trabalhar com o código-fonte local ❌ Atualização manual (requer Node.js)</b></summary>
+
+**Fork CentralDark — desenvolvimento local (Node.js 22.12 ou superior):**
+
+```bash
+git clone https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP.git
+cd CentralDarkDesktopCommanderMCP
+npm ci
+npm run build
+npm start
+```
+
+O servidor padrão usa STDIO; `npm start` não abre uma página HTTP. A compilação e execução deste roteiro dependem das ferramentas e dependências instaladas. O modo `remote` ainda usa o serviço original até a integração CentralDark ser concluída.
+
+**Instalação pelo código-fonte original:**
 
 ```bash
 git clone https://github.com/wonderwhy-er/DesktopCommanderMCP.git
 cd DesktopCommanderMCP
 npm run setup
 ```
-Restart Claude if running.
 
-The setup command will install dependencies, build the server, and configure Claude's desktop app.
+Reinicie o Claude se estiver aberto. O comando setup instala as dependências, compila o servidor e configura o aplicativo Claude Desktop.
 
-**❌ Auto-Updates:** No - requires manual git updates  
-**🔄 Manual Update:** `cd DesktopCommanderMCP && git pull && npm run setup`  
-**🗑️ Uninstall:** Run `npx @wonderwhy-er/desktop-commander@latest remove` or remove the cloned directory and MCP server entry from Claude config
+**❌ Atualização automática:** não, exige atualização manual pelo Git.  
+**🔄 Atualização manual do original:** `cd DesktopCommanderMCP && git pull && npm run setup`.  
+**🗑️ Desinstalação:** use o desinstalador original ou remova a entrada MCP e, se não houver trabalho a preservar, a cópia local correspondente.
 
 </details>
 
+<a id="option-6-docker-installation--auto-updates-no-nodejs-required"></a>
+<a id="option-6-docker-installation-🐳-⭐-auto-updates-no-nodejs-required"></a>
+
 <details>
-<summary><b>Option 6: Docker Installation 🐳 ⭐ Auto-Updates (No Node.js Required)</b></summary>
+<summary><b>Opção 6: instalar com Docker 🐳 ⭐ Atualização automática (dispensa Node.js no host)</b></summary>
 
-Perfect for users who want isolation or don't have Node.js installed. Runs in a sandboxed Docker container with a persistent work environment.
+Opção para quem deseja isolamento ou não tem Node.js instalado. O motor original roda em um contêiner com ambiente de trabalho persistente.
 
-**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed **and running**, Claude Desktop app installed.
+**Pré-requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução, além do Claude Desktop.
 
 **macOS/Linux:**
+
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.sh)
 ```
 
 **Windows PowerShell:**
+
 ```powershell
 iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.ps1'))
 ```
 
-The installer will check Docker, pull the image, prompt for folder mounting, and configure Claude Desktop.
+O instalador verifica o Docker, baixa a imagem, solicita a montagem de pastas e configura o Claude Desktop. Revise os scripts antes da execução.
 
-**Docker persistence:** Your tools, configs, work files, and package caches all survive restarts.
+**Persistência Docker:** ferramentas, configurações, arquivos de trabalho e caches permanecem entre reinicializações conforme os volumes configurados.
 
 <details>
-<summary>Manual Docker Configuration</summary>
+<summary>Configuração manual do Docker</summary>
 
-**Basic setup (no file access):**
+**Configuração básica (sem acesso aos arquivos do host):**
+
 ```json
 {
   "mcpServers": {
@@ -227,7 +275,8 @@ The installer will check Docker, pull the image, prompt for folder mounting, and
 }
 ```
 
-**With folder mounting:**
+**Com montagem de pastas:**
+
 ```json
 {
   "mcpServers": {
@@ -244,7 +293,8 @@ The installer will check Docker, pull the image, prompt for folder mounting, and
 }
 ```
 
-**Advanced folder mounting:**
+**Montagem avançada de pastas:**
+
 ```json
 {
   "mcpServers": {
@@ -268,44 +318,49 @@ The installer will check Docker, pull the image, prompt for folder mounting, and
 </details>
 
 <details>
-<summary>Docker Management Commands</summary>
+<summary>Comandos de gerenciamento do Docker</summary>
+
+**Atenção:** as opções de reset podem apagar dados persistentes. Faça backup e confirme o ambiente antes de executá-las.
 
 **macOS/Linux:**
+
 ```bash
-# Check status
+# Verificar estado
 bash <(curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.sh) --status
 
-# Reset all persistent data
+# Redefinir todos os dados persistentes
 bash <(curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.sh) --reset
 ```
 
 **Windows PowerShell:**
+
 ```powershell
-# Check status
+# Verificar estado
 $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.ps1'); & ([ScriptBlock]::Create("$script")) -Status
 
-# Reset all data
+# Redefinir todos os dados
 $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.ps1'); & ([ScriptBlock]::Create("$script")) -Reset
 
-# Show help
+# Mostrar ajuda
 $script = (New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.ps1'); & ([ScriptBlock]::Create("$script")) -Help
 ```
 
-**Troubleshooting:** Reset and reinstall from scratch:
+**Solução de problemas:** redefinir e reinstalar do zero, apenas se o descarte dos dados tiver sido autorizado:
+
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.sh) --reset && bash <(curl -fsSL https://raw.githubusercontent.com/wonderwhy-er/DesktopCommanderMCP/refs/heads/main/install-docker.sh)
 ```
 
 </details>
 
-**✅ Auto-Updates:** Yes - `latest` tag automatically gets newer versions  
-**🔄 Manual Update:** `docker pull mcp/desktop-commander:latest` then restart Claude  
+**✅ Atualização automática:** a tag `latest` aponta para versões mais recentes.  
+**🔄 Atualização manual:** `docker pull mcp/desktop-commander:latest` e reinicie o Claude.
 
 </details>
 
-### Install in Other Clients
+### Instalar em outros clientes
 
-Desktop Commander works with any MCP-compatible client. The standard JSON configuration is:
+O Desktop Commander funciona com clientes compatíveis com MCP. Configuração JSON padrão do original:
 
 ```json
 {
@@ -318,48 +373,48 @@ Desktop Commander works with any MCP-compatible client. The standard JSON config
 }
 ```
 
-Add this to your client's MCP configuration file at the locations below:
+Adicione esta configuração ao arquivo MCP do cliente nas localizações abaixo.
 
 <details>
 <summary><b>Cursor</b></summary><br>
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=desktop-commander&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkB3b25kZXJ3aHktZXIvZGVza3RvcC1jb21tYW5kZXJAbGF0ZXN0Il19)
+[![Instalar MCP original](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=desktop-commander&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkB3b25kZXJ3aHktZXIvZGVza3RvcC1jb21tYW5kZXJAbGF0ZXN0Il19)
 
-[View MCP Server in Directory](https://cursor.directory/mcp/desktop-commander-mcp)
+[Ver o servidor MCP no diretório](https://cursor.directory/mcp/desktop-commander-mcp).
 
-Or add manually to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in your project folder (project-specific).
+Ou adicione manualmente a `~/.cursor/mcp.json` (global) ou `.cursor/mcp.json` na pasta do projeto.
 
-See [Cursor MCP docs](https://docs.cursor.com/context/model-context-protocol) for more info.
+Consulte a [documentação MCP do Cursor](https://docs.cursor.com/context/model-context-protocol).
 
 </details>
 
 <details>
 <summary><b>Windsurf</b></summary>
 
-Add to `~/.codeium/windsurf/mcp_config.json`. See [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+Adicione a `~/.codeium/windsurf/mcp_config.json`. Consulte a [documentação MCP do Windsurf](https://docs.windsurf.com/windsurf/cascade/mcp).
 
 </details>
 
 <details>
 <summary><b>VS Code / GitHub Copilot</b></summary>
 
-Add to `.vscode/mcp.json` in your project or VS Code User Settings (JSON). Make sure MCP is enabled under Chat > MCP. Works in Agent mode.
+Adicione a `.vscode/mcp.json` no projeto ou às configurações de usuário do VS Code (JSON). Verifique se MCP está habilitado em Chat > MCP. Funciona no modo Agente.
 
-See [VS Code MCP docs](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more info.
+Consulte a [documentação MCP do VS Code](https://code.visualstudio.com/docs/copilot/chat/mcp-servers).
 
 </details>
 
 <details>
 <summary><b>Cline</b></summary>
 
-Configure through the Cline extension settings in VS Code. Open the Cline sidebar, click the MCP Servers icon, and add the JSON configuration above. See [Cline MCP docs](https://docs.cline.bot/mcp/configuring-mcp-servers) for more info.
+Configure nas opções da extensão Cline no VS Code. Abra a barra lateral, clique no ícone de servidores MCP e adicione o JSON acima. Consulte a [documentação MCP do Cline](https://docs.cline.bot/mcp/configuring-mcp-servers).
 
 </details>
 
 <details>
 <summary><b>Roo Code</b></summary>
 
-Add to your Roo Code MCP configuration file. See [Roo Code MCP docs](https://docs.roocode.com/features/mcp/using-mcp-in-roo) for more info.
+Adicione ao arquivo de configuração MCP do Roo Code. Consulte a [documentação MCP do Roo Code](https://docs.roocode.com/features/mcp/using-mcp-in-roo).
 
 </details>
 
@@ -370,34 +425,34 @@ Add to your Roo Code MCP configuration file. See [Roo Code MCP docs](https://doc
 claude mcp add --scope user desktop-commander -- npx -y @wonderwhy-er/desktop-commander@latest
 ```
 
-Remove `--scope user` to install for the current project only. See [Claude Code MCP docs](https://docs.anthropic.com/en/docs/claude-code/mcp) for more info.
+Remova `--scope user` para instalar somente no projeto atual. Consulte a [documentação MCP do Claude Code](https://docs.anthropic.com/en/docs/claude-code/mcp).
 
 </details>
 
 <details>
 <summary><b>Trae</b></summary>
 
-Use the "Add manually" feature and paste the JSON configuration above. See [Trae MCP docs](https://docs.trae.ai/ide/model-context-protocol?_lang=en) for more info.
+Use a função “Add manually” (adicionar manualmente) e cole o JSON acima. Consulte a [documentação MCP do Trae](https://docs.trae.ai/ide/model-context-protocol?_lang=en).
 
 </details>
 
 <details>
 <summary><b>Kiro</b></summary>
 
-Navigate to `Kiro` > `MCP Servers`, click `+ Add`, and paste the JSON configuration above. See [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
+Acesse `Kiro` > `MCP Servers`, clique em `+ Add` e cole o JSON acima. Consulte a [documentação MCP do Kiro](https://kiro.dev/docs/mcp/configuration/).
 
 </details>
 
 <details>
 <summary><b>Codex (OpenAI)</b></summary>
 
-Codex uses TOML configuration. Run this command to add Desktop Commander:
+O Codex usa configuração TOML. Execute este comando para adicionar o Desktop Commander:
 
 ```sh
 codex mcp add desktop-commander -- npx -y @wonderwhy-er/desktop-commander@latest
 ```
 
-Or manually add to `~/.codex/config.toml`:
+Ou adicione manualmente a `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.desktop-commander]
@@ -405,21 +460,21 @@ command = "npx"
 args = ["-y", "@wonderwhy-er/desktop-commander@latest"]
 ```
 
-See [Codex MCP docs](https://developers.openai.com/codex/mcp/) for more info.
+Consulte a [documentação MCP do Codex](https://developers.openai.com/codex/mcp/).
 
 </details>
 
 <details>
 <summary><b>JetBrains (AI Assistant)</b></summary>
 
-In JetBrains IDEs, go to **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, click `+` Add, select **As JSON**, and paste the JSON configuration above. See [JetBrains MCP docs](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html) for more info.
+Nas IDEs JetBrains, acesse **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, clique em `+`, selecione **As JSON** e cole a configuração acima. Consulte a [documentação MCP do JetBrains](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html).
 
 </details>
 
 <details>
 <summary><b>Gemini CLI</b></summary>
 
-Add to `~/.gemini/settings.json`:
+Adicione a `~/.gemini/settings.json`:
 
 ```json
 {
@@ -432,95 +487,102 @@ Add to `~/.gemini/settings.json`:
 }
 ```
 
-See [Gemini CLI docs](https://github.com/google-gemini/gemini-cli) for more info.
+Consulte a [documentação MCP do Gemini CLI](https://github.com/google-gemini/gemini-cli).
 
 </details>
 
 <details>
 <summary><b>Augment Code</b></summary>
 
-Press `Cmd/Ctrl+Shift+P`, open the Augment panel, and add a new MCP server named `desktop-commander` with the JSON configuration above. See [Augment Code MCP docs](https://docs.augmentcode.com/setup-augment/mcp) for more info.
+Pressione `Cmd/Ctrl+Shift+P`, abra o painel Augment e adicione um servidor MCP chamado `desktop-commander` com a configuração JSON acima. Consulte a [documentação MCP do Augment Code](https://docs.augmentcode.com/setup-augment/mcp).
 
 </details>
 
 <details>
 <summary><b>Qwen Code</b></summary>
 
-Run this command to add Desktop Commander:
+Execute o comando para adicionar Desktop Commander:
 
 ```sh
 qwen mcp add desktop-commander -- npx -y @wonderwhy-er/desktop-commander@latest
 ```
 
-Or add to `.qwen/settings.json` (project) or `~/.qwen/settings.json` (global). See [Qwen Code MCP docs](https://qwenlm.github.io/qwen-code-docs/en/developers/tools/mcp-server/) for more info.
+Ou adicione a `.qwen/settings.json` (projeto) ou `~/.qwen/settings.json` (global). Consulte a [documentação MCP do Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/developers/tools/mcp-server/).
 
 </details>
 
 <details>
-<summary><b>ChatGPT / Claude Web (Remote MCP)</b></summary>
+<summary><b>ChatGPT / Claude Web (MCP remoto original)</b></summary>
 
-Use Desktop Commander from **ChatGPT**, **Claude web**, and other AI services while commands still execute on your computer.
+Use o Desktop Commander pelo **ChatGPT**, **Claude web** e outros serviços de IA, mantendo a execução dos comandos no seu computador.
 
-Start the Remote Device:
+Inicie o dispositivo remoto original:
 
 ```bash
 npx @wonderwhy-er/desktop-commander@latest remote
 ```
 
-On first run, complete browser authentication, then connect your AI at **[mcp.desktopcommander.app](https://mcp.desktopcommander.app)**.
+Na primeira execução, conclua a autenticação no navegador e conecte sua IA em **[mcp.desktopcommander.app](https://mcp.desktopcommander.app)**.
 
-- Stop the local device temporarily with `Ctrl+C`
-- See available CLI options with `npx @wonderwhy-er/desktop-commander@latest remote --help`
-- See **[Remote MCP setup, logout/revocation, CLI reference, and troubleshooting](src/remote-device/README.md)**
+- Interrompa temporariamente o dispositivo local com `Ctrl+C`.
+- Consulte as opções disponíveis com `npx @wonderwhy-er/desktop-commander@latest remote --help`.
+- Consulte a [documentação de configuração, logout, revogação, opções da CLI e solução de problemas](src/remote-device/README.md).
 
-### Security
+### Segurança
 
-- ✅ The Remote Device only accepts commands while it is running
-- ✅ Commands execute locally under your user permissions
-- ✅ Secure OAuth authentication and encrypted communication channel
+- ✅ O dispositivo remoto só aceita comandos enquanto está em execução e conectado.
+- ✅ Os comandos são executados localmente com as permissões do usuário.
+- ✅ Autenticação OAuth e canal de comunicação criptografado.
+
+A conexão CentralDark própria será disponibilizada após a integração e os testes. Não confunda o serviço original com o fork.
 
 </details>
 
-## Updating & Uninstalling Desktop Commander
+## Atualizar e desinstalar o Desktop Commander
 
-### Automatic Updates (Options 1, 2, 3, 4 & 6)
-**Options 1 (npx), Option 2 (bash installer), 3 (Smithery), 4 (manual config), and 6 (Docker)** automatically update to the latest version whenever you restart Claude. No manual intervention needed.
+### Atualizações automáticas (opções 1, 2, 3, 4 e 6)
 
-### Manual Updates (Option 5)
-- **Option 5 (local checkout):** `cd DesktopCommanderMCP && git pull && npm run setup`
+As opções originais **1 (npx), 2 (instalador Bash), 3 (Smithery), 4 (configuração manual) e 6 (Docker)** são documentadas com atualização automática para versões recentes ao reiniciar o Claude, sem intervenção manual.
 
-### Uninstalling Desktop Commander
-#### 🤖 Automatic Uninstallation (Recommended)
+### Atualizações manuais (opção 5)
 
-The easiest way to completely remove Desktop Commander:
+- **Opção 5 (cópia local original):** `cd DesktopCommanderMCP && git pull && npm run setup`.
+- **Fork CentralDark:** atualize pelo Git, preserve seus trabalhos locais e compile novamente. As alterações de upstream devem ser incorporadas sem perder os deltas CentralDark.
+
+### Desinstalar o Desktop Commander
+
+#### 🤖 Desinstalação automática (recomendada para a instalação original)
+
+A maneira mais simples de remover o Desktop Commander original:
 
 ```bash
 npx @wonderwhy-er/desktop-commander@latest remove
 ```
 
-This automatic uninstaller will:
-- ✅ Remove Desktop Commander from Claude's MCP server configuration
-- ✅ Create a backup of your Claude config before making changes
-- ✅ Provide guidance for complete package removal
-- ✅ Restore from backup if anything goes wrong
+O desinstalador automático:
 
-#### 🔧 Manual Uninstallation
+- ✅ Remove Desktop Commander da configuração MCP do Claude.
+- ✅ Cria um backup da configuração do Claude antes de alterar.
+- ✅ Orienta a remoção completa do pacote.
+- ✅ Restaura o backup se ocorrer um problema.
 
-If the automatic uninstaller doesn't work or you prefer manual removal:
+#### 🔧 Desinstalação manual
 
-##### Remove from Claude Configuration
+Caso o desinstalador automático não funcione ou você prefira a remoção manual:
 
-1. **Locate your Claude Desktop config file:**
-  - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-  - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-  - **Linux:** `~/.config/Claude/claude_desktop_config.json`
+##### Remover da configuração do Claude
 
-2. **Edit the config file:**
-  - Open the file in a text editor
-  - Find and remove the `"desktop-commander"` entry from the `"mcpServers"` section
-  - Save the file
+1. **Localize o arquivo de configuração do Claude Desktop:**
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux:** `~/.config/Claude/claude_desktop_config.json`
+2. **Edite o arquivo:**
+   - Abra em um editor de texto.
+   - Localize e remova a entrada `"desktop-commander"` da seção `"mcpServers"`.
+   - Salve o arquivo.
 
-  **Example - Remove this section:**
+**Exemplo — remover esta seção:**
+
   ```json
   {
       "desktop-commander": {
@@ -530,106 +592,116 @@ If the automatic uninstaller doesn't work or you prefer manual removal:
   }
   ```
 
-Close and restart Claude Desktop to complete the removal.
+Feche e reinicie o Claude Desktop para concluir.
 
-#### 🆘 Troubleshooting
+#### 🆘 Solução de problemas
 
-**If automatic uninstallation fails:**
-- Use manual uninstallation as a fallback
+**Se a desinstalação automática falhar:** use a opção manual.
 
-**If Claude won't start after uninstalling:**
-- Restore the backup config file created by the uninstaller
-- Or manually fix the JSON syntax in your claude_desktop_config.json
+**Se o Claude não abrir após a desinstalação:**
 
-**Need help?**
-- Join our Discord community: https://discord.com/invite/kQ27sNnZr7
+- Restaure o backup criado pelo desinstalador.
+- Ou corrija a sintaxe JSON de claude_desktop_config.json.
 
-## Getting Started
+**Precisa de ajuda?** Entre na [comunidade Discord do original](https://discord.com/invite/kQ27sNnZr7).
 
-Once Desktop Commander is installed and Claude Desktop is restarted, you're ready to supercharge your Claude experience!
+<a id="getting-started"></a>
 
-### 🚀 New User Onboarding
+## Primeiros passos
 
-Desktop Commander includes intelligent onboarding to help you discover what's possible:
+Depois de instalar o Desktop Commander e reiniciar o Claude Desktop, você pode começar a trabalhar com as ferramentas.
 
-**For New Users:** When you're just getting started (fewer than 10 successful commands), Claude will automatically offer helpful getting-started guidance and practical tutorials after you use Desktop Commander successfully.
+### 🚀 Orientação para novos usuários
 
-**Request Help Anytime:** You can ask for onboarding assistance at any time by simply saying:
-- *"Help me get started with Desktop Commander"*
-- *"Show me Desktop Commander examples"* 
-- *"What can I do with Desktop Commander?"*
+O Desktop Commander inclui uma introdução inteligente para descobrir possibilidades.
 
-Claude will then show you beginner-friendly tutorials and examples, including:
-- 📁 Organizing your Downloads folder automatically
-- 📊 Analyzing CSV/Excel files with Python
-- ⚙️ Setting up GitHub Actions CI/CD
-- 🔍 Exploring and understanding codebases
-- 🤖 Running interactive development environments
+**Novos usuários:** quando ainda tiver menos de dez comandos bem-sucedidos, o Claude poderá apresentar orientações e tutoriais depois de uma execução bem-sucedida.
 
-## Usage
+**Peça ajuda a qualquer momento:**
 
-The server provides a comprehensive set of tools organized into several categories:
+- *"Ajude-me a começar com o Desktop Commander."*
+- *"Mostre exemplos do Desktop Commander."*
+- *"O que posso fazer com o Desktop Commander?"*
 
-### Available Tools
+O Claude poderá mostrar tutoriais e exemplos como:
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| **Configuration** | `get_config` | Get the complete server configuration as JSON (includes blockedCommands, defaultShell, allowedDirectories, fileReadLineLimit, fileWriteLineLimit, telemetryEnabled) |
-| | `set_config_value` | Set a specific configuration value by key. Available settings: <br>• `blockedCommands`: Array of shell commands that cannot be executed<br>• `defaultShell`: Shell to use for commands (e.g., bash, zsh, powershell)<br>• `allowedDirectories`: Array of filesystem paths the server can access for file operations (⚠️ terminal commands can still access files outside these directories)<br>• `fileReadLineLimit`: Maximum lines to read at once (default: 1000)<br>• `fileWriteLineLimit`: Maximum lines to write at once (default: 50)<br>• `telemetryEnabled`: Enable/disable telemetry (boolean) |
-| **Terminal** | `start_process` | Start programs with smart detection of when they're ready for input |
-| | `interact_with_process` | Send commands to running programs and get responses |
-| | `read_process_output` | Read output from running processes |
-| | `force_terminate` | Force terminate a running terminal session |
-| | `list_sessions` | List all active terminal sessions |
-| | `list_processes` | List all running processes with detailed information |
-| | `kill_process` | Terminate a running process by PID |
-| **Filesystem** | `read_file` | Read contents from local filesystem, URLs, Excel files (.xlsx, .xls, .xlsm), and PDFs with line/page-based pagination |
-| | `read_multiple_files` | Read multiple files simultaneously |
-| | `write_file` | Write file contents with options for rewrite or append mode. Supports Excel files (JSON 2D array format). For PDFs, use `write_pdf` |
-| | `write_pdf` | Create new PDF files from markdown or modify existing PDFs (insert/delete pages). Supports HTML/CSS styling and SVG graphics |
-| | `create_directory` | Create a new directory or ensure it exists |
-| | `list_directory` | Get detailed recursive listing of files and directories (supports depth parameter, default depth=2) |
-| | `move_file` | Move or rename files and directories |
-| | `start_search` | Start streaming search for files by name or content patterns (searches text files and Excel content) |
-| | `get_more_search_results` | Get paginated results from active search with offset support |
-| | `stop_search` | Stop an active search gracefully |
-| | `list_searches` | List all active search sessions |
-| | `get_file_info` | Retrieve detailed metadata about a file or directory (includes sheet info for Excel files) |
-| **Text Editing** | `edit_block` | Apply targeted text replacements for text files, or range-based cell updates for Excel files |
-| **Analytics** | `get_usage_stats` | Get usage statistics for your own insight |
-| | `get_recent_tool_calls` | Get recent tool call history with arguments and outputs for debugging and context recovery |
-| | `give_feedback_to_desktop_commander` | Open feedback form in browser to provide feedback to Desktop Commander Team |
+- 📁 Organizar a pasta Downloads automaticamente.
+- 📊 Analisar arquivos CSV/Excel com Python.
+- ⚙️ Configurar CI/CD com GitHub Actions.
+- 🔍 Explorar e entender bases de código.
+- 🤖 Executar ambientes de desenvolvimento interativos.
 
-### Quick Examples
+<a id="usage"></a>
 
-**Data Analysis:**
+## Uso
+
+O servidor fornece um conjunto abrangente de ferramentas, organizado em categorias.
+
+### Ferramentas disponíveis
+
+| Categoria | Ferramenta | Descrição |
+|---|---|---|
+| **Configuração** | `get_config` | Consulta a configuração completa do servidor em JSON, incluindo blockedCommands, defaultShell, allowedDirectories, fileReadLineLimit, fileWriteLineLimit e telemetryEnabled. |
+| | `set_config_value` | Altera uma configuração pela chave. Opções:<br>• `blockedCommands`: comandos bloqueados.<br>• `defaultShell`: shell padrão (bash, zsh, powershell).<br>• `allowedDirectories`: diretórios permitidos para operações de arquivos (⚠️ comandos de terminal ainda podem alcançar outros diretórios).<br>• `fileReadLineLimit`: máximo de linhas por leitura (padrão 1000).<br>• `fileWriteLineLimit`: máximo de linhas por escrita (padrão 50).<br>• `telemetryEnabled`: ativa/desativa a telemetria (booleano). |
+| **Terminal** | `start_process` | Inicia programas, detectando quando estão prontos para receber entradas. |
+| | `interact_with_process` | Envia comandos a programas ativos e recebe respostas. |
+| | `read_process_output` | Lê a saída de processos em execução. |
+| | `force_terminate` | Encerra à força uma sessão de terminal ativa. |
+| | `list_sessions` | Lista sessões de terminal ativas. |
+| | `list_processes` | Lista processos em execução com informações detalhadas. |
+| | `kill_process` | Encerra um processo pelo PID. |
+| **Arquivos** | `read_file` | Lê arquivos locais, URLs, Excel (.xlsx, .xls, .xlsm) e PDF, com paginação por linhas ou páginas. |
+| | `read_multiple_files` | Lê vários arquivos simultaneamente. |
+| | `write_file` | Escreve ou acrescenta conteúdo a arquivos. Suporta Excel (matriz JSON bidimensional). Para PDF, use write_pdf. |
+| | `write_pdf` | Cria PDFs a partir de Markdown ou modifica PDFs existentes (inserir/remover páginas). Suporta HTML/CSS e SVG. |
+| | `create_directory` | Cria um diretório ou garante sua existência. |
+| | `list_directory` | Lista arquivos e diretórios recursivamente com detalhes e profundidade configurável (padrão 2). |
+| | `move_file` | Move ou renomeia arquivos e diretórios. |
+| | `start_search` | Inicia pesquisa progressiva por nome ou padrões de conteúdo, inclusive Excel. |
+| | `get_more_search_results` | Obtém resultados paginados de pesquisa ativa, com deslocamento. |
+| | `stop_search` | Interrompe uma pesquisa ativa de forma controlada. |
+| | `list_searches` | Lista sessões de pesquisa ativas. |
+| | `get_file_info` | Consulta metadados detalhados do arquivo ou diretório, incluindo planilhas Excel. |
+| **Edição de texto** | `edit_block` | Aplica substituições pontuais de texto ou atualizações de intervalos de células Excel. |
+| **Análise** | `get_usage_stats` | Consulta estatísticas de uso. |
+| | `get_recent_tool_calls` | Consulta chamadas recentes, argumentos e resultados para depuração e recuperação de contexto. |
+| | `give_feedback_to_desktop_commander` | Abre o formulário do projeto original para enviar comentários à equipe Desktop Commander. |
+
+### Exemplos rápidos
+
+**Análise de dados:**
+
 ```
-"Analyze sales.csv and show top customers" → Claude runs Python code in memory
-```
-
-**Remote Access:**
-```
-"SSH to my server and check disk space" → Claude maintains SSH session
-```
-
-**Development:**
-```
-"Start Node.js and test this API" → Claude runs interactive Node session
+"Analise sales.csv e mostre os principais clientes" → Claude executa Python em memória
 ```
 
-### Tool Usage Examples
+**Acesso remoto:**
 
-Search/Replace Block Format:
+```
+"Conecte ao meu servidor por SSH e verifique o espaço em disco" → Claude mantém a sessão SSH
+```
+
+**Desenvolvimento:**
+
+```
+"Inicie Node.js e teste esta API" → Claude executa uma sessão Node interativa
+```
+
+### Exemplos de ferramentas
+
+Formato de bloco de pesquisa/substituição:
+
 ```
 filepath.ext
 <<<<<<< SEARCH
-content to find
+conteúdo a localizar
 =======
-new content
+novo conteúdo
 >>>>>>> REPLACE
 ```
 
-Example:
+Exemplo:
+
 ```
 src/main.js
 <<<<<<< SEARCH
@@ -639,272 +711,290 @@ console.log("new message");
 >>>>>>> REPLACE
 ```
 
-### Enhanced Edit Block Features
+### Recursos aprimorados da edição por blocos
 
-The `edit_block` tool includes several enhancements for better reliability:
+A ferramenta `edit_block` inclui melhorias de confiabilidade:
 
-1. **Improved Prompting**: Tool descriptions now emphasize making multiple small, focused edits rather than one large change
-2. **Fuzzy Search Fallback**: When exact matches fail, it performs fuzzy search and provides detailed feedback
-3. **Character-level Diffs**: Shows exactly what's different using `{-removed-}{+added+}` format
-4. **Multiple Occurrence Support**: Can replace multiple instances with `expected_replacements` parameter
-5. **Comprehensive Logging**: All fuzzy searches are logged for analysis and debugging
+1. **Orientação aprimorada:** as descrições incentivam pequenas alterações focadas em vez de uma grande mudança.
+2. **Busca aproximada:** se não houver correspondência exata, pesquisa alternativas e apresenta detalhes.
+3. **Diferenças por caractere:** mostra precisamente as alterações no formato `{-removed-}{+added+}`.
+4. **Múltiplas ocorrências:** permite substituir várias ocorrências com `expected_replacements`.
+5. **Registro abrangente:** todas as buscas aproximadas são registradas para análise e depuração.
 
-When a search fails, you'll see detailed information about the closest match found, including similarity percentage, execution time, and character differences. All these details are automatically logged for later analysis using the fuzzy search log tools.
+Quando uma pesquisa falha, são exibidos detalhes da melhor correspondência, incluindo similaridade, tempo de execução e diferenças de caracteres. Essas informações são registradas automaticamente para análise posterior.
 
-### Docker Support
+### Suporte a Docker
 
-### 🐳 Isolated Environment Usage
+### 🐳 Uso em ambiente isolado
 
-Desktop Commander can be run in Docker containers for **complete isolation from your host system**, providing **zero risk to your computer**. This is perfect for testing, development, or when you want complete sandboxing.
+O Desktop Commander pode rodar em contêineres Docker, uma opção para isolar o ambiente de execução do host durante testes e desenvolvimento. O isolamento depende da configuração, das permissões e dos volumes montados; não constitui garantia de risco zero.
 
-### Installation Instructions
+### Instruções de instalação
 
-1. **Install Docker for Windows/Mac**
-   - Download and install Docker Desktop from [docker.com](https://www.docker.com/products/docker-desktop/)
+1. **Instale o Docker para Windows/macOS.**
+   - Baixe e instale [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+2. **Obtenha a configuração Docker do Desktop Commander original.**
+   - Acesse https://hub.docker.com/mcp/server/desktop-commander/manual.
+   - **Opção A:** use o comando de terminal oferecido para instalação automática.
+   - **Opção B:** clique em "Standalone" para obter o JSON e adicioná-lo manualmente à configuração do Claude Desktop.
 
-2. **Get Desktop Commander Docker Configuration**
-   - Visit: https://hub.docker.com/mcp/server/desktop-commander/manual
-   - **Option A:** Use the provided terminal command for automated setup
-   - **Option B:** Click "Standalone" to get the config JSON and add it manually to your Claude Desktop config
- ![docker-config.png](screenshots/docker-config.png)
+   ![Configuração Docker](screenshots/docker-config.png)
 
-3. **Mount Your Machine Folders (Coming Soon)**
-   - Instructions on how to mount your local directories into the Docker container will be provided soon
-   - This will allow you to work with your files while maintaining complete isolation
+3. **Monte somente as pastas necessárias do computador.**
+   - Consulte os exemplos de montagem da opção 6. O original anuncia instruções adicionais futuras.
+   - A montagem permite trabalhar com arquivos específicos do host, limitando o que é compartilhado com o contêiner.
 
-### Benefits of Docker Usage
-- **Complete isolation** from your host system
-- **Consistent environment** across different machines
-- **Easy cleanup** - just remove the container when done
-- **Perfect for testing** new features or configurations
+### Benefícios do uso de Docker
 
-## URL Support
-- `read_file` can now fetch content from both local files and URLs
-- Example: `read_file` with `isUrl: true` parameter to read from web resources
-- Handles both text and image content from remote sources
-- Images (local or from URLs) are displayed visually in Claude's interface, not as text
-- Claude can see and analyze the actual image content
-- Default 30-second timeout for URL requests
+- Isolamento do ambiente, quando configurado corretamente.
+- Ambiente consistente em diferentes máquinas.
+- Limpeza facilitada ao remover o contêiner (preserve volumes necessários).
+- Adequado para testar novas funcionalidades e configurações.
 
-## File Preview UI & Markdown Editor
+## Suporte a URLs
 
-Desktop Commander includes a rich file preview widget in Claude Desktop that renders files visually as AI works with them.
+- `read_file` pode obter conteúdo de arquivos locais e URLs.
+- Exemplo: `read_file` com `isUrl: true` para ler recursos da web.
+- Suporta conteúdo textual e imagens de fontes remotas.
+- Imagens locais ou por URL são mostradas visualmente na interface do Claude, não apenas como texto.
+- O Claude pode analisar o conteúdo visual.
+- Tempo limite padrão de 30 segundos para solicitações de URL.
 
-### Supported file types
-- **Markdown** — rendered preview with a built-in editor
-- **Images** — inline display (PNG, JPEG, GIF, WebP, etc.)
-- **Code files** — syntax-highlighted source view
-- **HTML** — rendered preview with toggle to source view
-- **Directories** — interactive tree with expand/collapse and lazy loading
-- **PDF, Excel, DOCX** — native content extraction and display
+<a id="file-preview-ui--markdown-editor"></a>
 
-### Markdown Editor
+## Prévia de arquivos e editor Markdown
 
-When viewing a `.md` file in Claude Desktop, you can edit it directly inside the preview panel — no need to open a separate app.
+O Desktop Commander inclui uma interface de prévia de arquivos no Claude Desktop, renderizando-os visualmente enquanto a IA trabalha.
 
-**How to use:**
-1. Ask Claude to read or create a markdown file
-2. Expand the file preview to fullscreen using the **⤢ Expand** button
-3. The editor activates automatically in fullscreen mode
-4. Edit your content with a live preview toggle, copy, undo, and save controls
-5. Changes are saved back to disk; collapse to return to inline view
+### Tipos de arquivo aceitos
 
-**Editor features:**
-- Live **edit / preview toggle** — switch between raw markdown and rendered output
-- **Auto-save** to disk with save status indicator
-- **Undo** support to revert unsaved changes
-- **Copy** button to grab the full markdown source
-- **Open in editor** — launch your default markdown app directly from the panel
-- Partial-file awareness — loads and merges surrounding lines when the file was only partially read
-- Text selection context — select text in preview mode and the AI can reference your selection
+- **Markdown** — prévia renderizada com editor integrado.
+- **Imagens** — exibição no painel (PNG, JPEG, GIF, WebP etc.).
+- **Código** — código-fonte com destaque de sintaxe.
+- **HTML** — prévia renderizada com opção de ver o código-fonte.
+- **Diretórios** — árvore interativa expansível com carregamento sob demanda.
+- **PDF, Excel, DOCX** — extração e exibição nativa de conteúdo.
 
-### Directory Browser
+### Editor Markdown
 
-When Claude runs `list_directory`, the result opens as an interactive file tree inside the preview panel — not just raw text output.
+Ao visualizar um arquivo .md no Claude Desktop, você pode editá-lo diretamente no painel, sem abrir outro aplicativo.
 
-**Features:**
-- **Expandable tree** — folders expand and collapse on click; top-level contents shown immediately
-- **Lazy loading** — subfolders load on demand to keep the initial view fast
-- **Large directory handling** — directories with many items show a `⚠ click to load all` button instead of overwhelming the view
-- **Open in Finder/Explorer** — each folder has a quick-open button to reveal it in your file manager
-- **Click to preview** — clicking any file in the tree opens it in the file preview panel directly
-- **Back navigation** — after opening a file from the tree, a ← Back button returns you to the directory view
+**Como usar:**
 
-### Other preview features
-- **Expand / collapse** — toggle between compact summary row and full panel
-- **Open in folder** — reveal the file in Finder/Explorer with one click
-- **Load more lines** — incrementally load content above or below a partial read window
-- **Text selection** — highlight text in any preview; the AI can see and reference your selection
+1. Peça ao Claude que leia ou crie um arquivo Markdown.
+2. Expanda a prévia para tela inteira pelo botão **⤢ Expand** (expandir).
+3. O editor é ativado automaticamente nesse modo.
+4. Edite com alternância de prévia ao vivo e controles de copiar, desfazer e salvar.
+5. As mudanças são salvas no disco; recolha o painel para voltar à visão compacta.
 
-## Fuzzy Search Log Analysis (npm scripts)
+**Recursos do editor:**
 
-The fuzzy search logging system includes convenient npm scripts for analyzing logs outside of the MCP environment:
+- **Alternar edição/prévia ao vivo** — mude entre Markdown bruto e conteúdo renderizado.
+- **Salvamento automático** no disco com indicador de estado.
+- **Desfazer** alterações ainda não salvas.
+- **Copiar** todo o Markdown.
+- **Abrir no editor** — inicia o aplicativo Markdown padrão diretamente do painel.
+- Consciência de arquivos parciais: carrega e combina linhas adjacentes quando apenas parte do arquivo foi lida.
+- Contexto de seleção: selecione texto na prévia para a IA poder referenciá-lo.
+
+### Navegador de diretórios
+
+Quando o Claude executa `list_directory`, o resultado pode abrir como uma árvore interativa de arquivos no painel, não apenas texto.
+
+**Recursos:**
+
+- **Árvore expansível** — abra e feche pastas com um clique; conteúdo inicial mostrado imediatamente.
+- **Carregamento sob demanda** — subpastas carregam quando necessárias.
+- **Pastas grandes** — exibe botão `⚠ click to load all` em vez de sobrecarregar a interface.
+- **Abrir no Finder/Explorer** — acesse cada pasta no gerenciador de arquivos.
+- **Clique para visualizar** — abra arquivos no painel de prévia.
+- **Voltar** — depois de abrir um arquivo, o botão ← Back retorna à listagem.
+
+### Outros recursos de prévia
+
+- **Expandir/recolher** — alterna entre resumo compacto e painel completo.
+- **Abrir na pasta** — mostra o arquivo no Finder/Explorer.
+- **Carregar mais linhas** — obtém mais conteúdo acima ou abaixo de uma leitura parcial.
+- **Selecionar texto** — realce trechos para a IA referenciar.
+
+## Análise de registros de busca aproximada (scripts npm)
+
+O sistema de registro oferece scripts npm para analisar buscas aproximadas fora do MCP.
 
 ```bash
-# View recent fuzzy search logs
+# Consultar registros recentes de busca aproximada
 npm run logs:view -- --count 20
 
-# Analyze patterns and performance
+# Analisar padrões e desempenho
 npm run logs:analyze -- --threshold 0.8
 
-# Export logs to CSV or JSON
+# Exportar registros para CSV ou JSON
 npm run logs:export -- --format json --output analysis.json
 
-# Clear all logs (with confirmation)
+# Limpar registros (com confirmação)
 npm run logs:clear
 ```
 
-For detailed documentation on these scripts, see [scripts/README.md](scripts/README.md).
+Veja a [documentação detalhada dos scripts](scripts/README.md).
 
-## Fuzzy Search Logs
+## Registros de busca aproximada
 
-Desktop Commander includes comprehensive logging for fuzzy search operations in the `edit_block` tool. When an exact match isn't found, the system performs a fuzzy search and logs detailed information for analysis.
+O Desktop Commander registra as operações de busca aproximada do `edit_block`. Quando não encontra correspondência exata, a ferramenta pesquisa alternativas e registra dados para análise.
 
-### What Gets Logged
+### O que é registrado
 
-Every fuzzy search operation logs:
-- **Search and found text**: The text you're looking for vs. what was found
-- **Similarity score**: How close the match is (0-100%)
-- **Execution time**: How long the search took
-- **Character differences**: Detailed diff showing exactly what's different
-- **File metadata**: Extension, search/found text lengths
-- **Character codes**: Specific character codes causing differences
+Cada operação registra:
 
-### Log Location
+- **Texto procurado e encontrado:** o texto pesquisado em comparação com a correspondência.
+- **Similaridade:** proximidade da correspondência (0–100%).
+- **Tempo de execução:** duração da pesquisa.
+- **Diferenças de caracteres:** comparação detalhada.
+- **Metadados do arquivo:** extensão e comprimento dos textos procurado e encontrado.
+- **Códigos de caracteres:** valores específicos que causam diferenças.
 
-Logs are automatically saved to:
-- **macOS/Linux**: `~/.claude-server-commander-logs/fuzzy-search.log`
-- **Windows**: `%USERPROFILE%\.claude-server-commander-logs\fuzzy-search.log`
+### Localização dos registros
 
-### What You'll Learn
+Salvos automaticamente em:
 
-The fuzzy search logs help you understand:
-1. **Why exact matches fail**: Common issues like whitespace differences, line endings, or character encoding
-2. **Performance patterns**: How search complexity affects execution time
-3. **File type issues**: Which file extensions commonly have matching problems
-4. **Character encoding problems**: Specific character codes that cause diffs
+- **macOS/Linux:** `~/.claude-server-commander-logs/fuzzy-search.log`
+- **Windows:** `%USERPROFILE%\.claude-server-commander-logs\fuzzy-search.log`
 
-## Local Tool History and Audit Logs
+### O que você pode aprender
 
-Desktop Commander keeps tool-call records **locally on the machine running the MCP server**. These local files are separate from optional telemetry and are not a server-side historical audit log.
+Os registros ajudam a entender:
 
-### `claude_tool_call.log` — local argument log
+1. **Falhas de correspondência exata:** diferenças de espaços, finais de linha ou codificação.
+2. **Desempenho:** como a complexidade afeta a duração.
+3. **Tipos de arquivo:** extensões com problemas frequentes.
+4. **Codificação:** caracteres específicos que causam diferenças.
 
-Every tool call handled by the local MCP server is appended as a text line containing an ISO timestamp, the tool name, and the JSON-serialized arguments. Arguments are **not redacted or sanitized before being written to this local file**, so it may contain command text, file paths, or other sensitive values passed to tools. Tool outputs are not written to this file.
+<a id="local-tool-history-and-audit-logs"></a>
 
-The active file rotates when it reaches 10 MB. The previous file is renamed using a timestamp, for example `claude_tool_call_2026-09-07_14-32-10.log`, and a new `claude_tool_call.log` is created. Rotated files are not automatically deleted by the logger.
+## Histórico local de ferramentas e auditoria
 
-Locations:
-- **macOS/Linux**: `~/.claude-server-commander/claude_tool_call.log`
-- **Windows**: `%USERPROFILE%\.claude-server-commander\claude_tool_call.log`
+O Desktop Commander mantém registros das chamadas **na máquina que executa o servidor MCP**. Esses arquivos são separados da telemetria opcional e não constituem um histórico de auditoria no servidor remoto.
 
-### `tool-history.jsonl` — recent tool-call history
+### `claude_tool_call.log` — registro local de argumentos
 
-Desktop Commander also keeps a JSON Lines history used by `get_recent_tool_calls`. Each record contains the timestamp, tool name, arguments, duration, and the returned result. This history is loaded from disk on startup, so recent history can survive an MCP server restart.
+Cada chamada recebida pelo servidor MCP local é acrescentada como uma linha de texto com horário ISO, nome da ferramenta e argumentos em JSON. **Os argumentos não são ocultados nem sanitizados antes da gravação local**, podendo incluir comandos, caminhos ou outros dados sensíveis. Resultados não são gravados neste arquivo.
 
-To keep this history bounded:
-- At most the most recent 1,000 calls are kept in memory.
-- Stored output is capped at 4 KiB per record; larger outputs are replaced with an omission marker.
-- The on-disk file is trimmed when it grows beyond 5 MiB, keeping roughly the newest 4 MiB.
-- On startup, a history with more than 2,000 records is rewritten to the most recent 1,000 records.
-- `get_recent_tool_calls` and `track_ui_event` are excluded from this JSONL history.
+O arquivo ativo é rotacionado ao atingir 10 MB. O anterior é renomeado com data e hora, por exemplo `claude_tool_call_2026-09-07_14-32-10.log`, e um novo `claude_tool_call.log` é criado. O registrador não exclui automaticamente os arquivos rotacionados.
 
-Locations:
-- **macOS/Linux**: `~/.claude-server-commander/tool-history.jsonl`
-- **Windows**: `%USERPROFILE%\.claude-server-commander\tool-history.jsonl`
+Localizações:
 
-### Remote calls and server-side retention
+- **macOS/Linux:** `~/.claude-server-commander/claude_tool_call.log`
+- **Windows:** `%USERPROFILE%\.claude-server-commander\claude_tool_call.log`
 
-Calls executed through Remote Desktop Commander are still handled by the local MCP server and use the same local history files above. The Remote Desktop Commander service temporarily stores tool arguments and results in `mcp_remote_calls` so calls can be routed and completed. Terminal rows are automatically swept shortly after completion (eligible for deletion after one minute, with a one-hour creation-time backstop), so they are not kept as a long-term historical server-side audit trail.
+### `tool-history.jsonl` — histórico recente de chamadas
 
-These local history files are also separate from Desktop Commander's optional telemetry. The files themselves are not uploaded as telemetry. See [Data Collection & Privacy](#data-collection--privacy) and [PRIVACY.md](PRIVACY.md) for telemetry details.
+O Desktop Commander também mantém um histórico JSON Lines utilizado por `get_recent_tool_calls`. Cada registro contém horário, nome da ferramenta, argumentos, duração e resultado. O histórico é carregado do disco na inicialização e pode sobreviver ao reinício do MCP.
 
-## Handling Long-Running Commands
+Limites do histórico:
 
-For commands that may take a while:
+- Até 1.000 chamadas recentes em memória.
+- Resultados limitados a 4 KiB por registro; conteúdos maiores recebem marcador de omissão.
+- O arquivo em disco é reduzido quando ultrapassa 5 MiB, preservando cerca de 4 MiB mais recentes.
+- Na inicialização, um histórico com mais de 2.000 registros é reescrito com os 1.000 mais recentes.
+- `get_recent_tool_calls` e `track_ui_event` são excluídos desse histórico JSONL.
 
-## Configuration Management
+Localizações:
 
-### ⚠️ Important Security Warnings
+- **macOS/Linux:** `~/.claude-server-commander/tool-history.jsonl`
+- **Windows:** `%USERPROFILE%\.claude-server-commander\tool-history.jsonl`
 
-> **For comprehensive security information and vulnerability reporting**: See [SECURITY.md](SECURITY.md)
+### Chamadas remotas e retenção no servidor
 
-1. **Known security limitations**: Directory restrictions and command blocking can be bypassed through various methods including symlinks, command substitution, and absolute paths or code execution
+As chamadas do serviço Remote Desktop Commander original são tratadas pelo servidor MCP local e usam os mesmos arquivos de histórico. O serviço original guarda temporariamente argumentos e resultados em `mcp_remote_calls` para encaminhar e concluir as chamadas. Registros em estado terminal ficam elegíveis à exclusão após um minuto, com limite de segurança de uma hora desde a criação, conforme a documentação original; não são um histórico permanente de auditoria remota.
 
-2. **Always change configuration in a separate chat window** from where you're doing your actual work. Claude may sometimes attempt to modify configuration settings (like `allowedDirectories`) if it encounters filesystem access restrictions.
+O histórico local é separado da telemetria opcional do original; os próprios arquivos não são enviados como telemetria. Veja [Coleta de dados e privacidade](#data-collection--privacy) e [PRIVACY.md](PRIVACY.md). A política do futuro serviço remoto CentralDark deverá ser validada separadamente.
 
-3. **The `allowedDirectories` setting currently only restricts filesystem operations**, not terminal commands. Terminal commands can still access files outside allowed directories.
+<a id="handling-long-running-commands"></a>
 
-4. **For production security**: Use the [Docker installation](#option-6-docker-installation-🐳-⭐-auto-updates-no-nodejs-required) which provides complete isolation from your host system.
+## Comandos de longa duração
 
-### Configuration Tools
+Quando um comando demora, mantenha a sessão, leia sua saída progressivamente e encerre somente se necessário. Os comandos de gerenciamento são explicados abaixo.
 
-You can manage server configuration using the provided tools:
+<a id="configuration-management"></a>
+
+## Gerenciamento de configuração
+
+### ⚠️ Avisos importantes de segurança
+
+> **Para informações completas sobre segurança e comunicação de vulnerabilidades:** consulte [SECURITY.md](SECURITY.md).
+
+1. **Limitações conhecidas:** restrições de diretórios e bloqueios de comandos são proteções contra acidentes, não uma barreira de segurança contra execução arbitrária.
+2. **Altere configurações em uma conversa separada do trabalho principal.** O cliente de IA pode tentar mudar configurações, como `allowedDirectories`, ao encontrar uma restrição de acesso.
+3. **allowedDirectories restringe operações de arquivo, não comandos de terminal.** Comandos ainda podem acessar outros caminhos.
+4. **Segurança em produção:** use isolamento no sistema operacional, como [Docker](#option-6-docker-installation--auto-updates-no-nodejs-required) corretamente configurado ou uma máquina virtual.
+
+### Ferramentas de configuração
+
+Gerencie a configuração do servidor com as ferramentas fornecidas:
 
 ```javascript
-// Get the entire config
+// Consultar configuração completa
 get_config({})
 
-// Set a specific config value
+// Definir uma configuração específica
 set_config_value({ "key": "defaultShell", "value": "/bin/zsh" })
 
-// Set multiple config values using separate calls
+// Definir vários valores em chamadas separadas
 set_config_value({ "key": "defaultShell", "value": "/bin/bash" })
 set_config_value({ "key": "allowedDirectories", "value": ["/Users/username/projects"] })
 ```
 
-The configuration is saved to `config.json` in the server's working directory and persists between server restarts.
+A configuração é salva em `config.json` e persiste entre reinicializações, conforme a configuração de armazenamento do servidor.
 
-#### Understanding fileWriteLineLimit
+#### Entendendo fileWriteLineLimit
 
-The `fileWriteLineLimit` setting controls how many lines can be written in a single `write_file` operation (default: 50 lines). This limit exists for several important reasons:
+`fileWriteLineLimit` controla quantas linhas podem ser escritas em uma operação `write_file` (padrão: 50).
 
-**Why the limit exists:**
-- **AIs are wasteful with tokens**: Instead of doing two small edits in a file, AIs may decide to rewrite the whole thing. We're trying to force AIs to do things in smaller changes as it saves time and tokens
-- **Claude UX message limits**: There are limits within one message and hitting "Continue" does not really work. What we're trying here is to make AI work in smaller chunks so when you hit that limit, multiple chunks have succeeded and that work is not lost - it just needs to restart from the last chunk
+**Por que existe o limite:**
 
-**Setting the limit:**
+- **Economia de tokens:** a IA pode reescrever um arquivo inteiro quando duas pequenas edições seriam suficientes. Alterações menores economizam tempo e tokens.
+- **Limites de mensagens do Claude:** dividir o trabalho em blocos permite retomar do último bloco bem-sucedido se o cliente atingir o limite de uma mensagem.
+
+**Ajustar o limite:**
+
 ```javascript
-// You can set it to thousands if you want
+// Definir um limite maior
 set_config_value({ "key": "fileWriteLineLimit", "value": 1000 })
 
-// Or keep it smaller to force more efficient behavior
+// Ou manter um limite menor para incentivar eficiência
 set_config_value({ "key": "fileWriteLineLimit", "value": 25 })
 ```
 
-**Maximum value**: You can set it to thousands if you want - there's no technical restriction.
+**Valor máximo:** a documentação original não impõe um limite técnico específico de milhares de linhas.
 
-**Best practices**:
-- Keep the default (50) to encourage efficient AI behavior and avoid token waste
-- The system automatically suggests chunking when limits are exceeded
-- Smaller chunks mean less work lost when Claude hits message limits
+**Boas práticas:**
 
-### Best Practices
+- Mantenha o padrão de 50 para incentivar edições eficientes.
+- O sistema sugere divisão em blocos quando os limites são excedidos.
+- Blocos menores reduzem a perda de trabalho quando o cliente atinge limites.
 
-1. **Create a dedicated chat for configuration changes**: Make all your config changes in one chat, then start a new chat for your actual work.
+### Boas práticas
 
-2. **Be careful with empty `allowedDirectories`**: Setting this to an empty array (`[]`) grants access to your entire filesystem for file operations.
+1. Use uma conversa dedicada para alterações de configuração e outra para o trabalho.
+2. Cuidado com `allowedDirectories: []`: a lista vazia permite operações de arquivos em todo o sistema de arquivos acessível ao usuário.
+3. Especifique caminhos exatos, evitando caminhos amplos como `/`.
+4. Confira a configuração depois de alterar com `get_config({})`.
 
-3. **Use specific paths**: Instead of using broad paths like `/`, specify exact directories you want to access.
+## Opções de linha de comando
 
-4. **Always verify configuration after changes**: Use `get_config({})` to confirm your changes were applied correctly.
+O Desktop Commander oferece opções para personalizar o comportamento.
 
-## Command Line Options
+### Desativar a introdução
 
-Desktop Commander supports several command line options for customizing behavior:
-
-### Disable Onboarding
-
-By default, Desktop Commander shows helpful onboarding prompts to new users (those with fewer than 10 tool calls). You can disable this behavior:
+Por padrão, o Desktop Commander apresenta orientações a novos usuários (menos de dez chamadas). Você pode desativá-las.
 
 ```bash
-# Disable onboarding for this session
+# Desativar a introdução nesta sessão
 node dist/index.js --no-onboarding
 
-# Or if using npm scripts
+# Ou usando scripts npm
 npm run start:no-onboarding
 
-# For npx installations, modify your claude_desktop_config.json:
+# Para instalações npx, ajuste claude_desktop_config.json:
 {
   "mcpServers": {
     "desktop-commander": {
@@ -919,103 +1009,117 @@ npm run start:no-onboarding
 }
 ```
 
-**When onboarding is automatically disabled:**
-- When the MCP client name is set to "desktop-commander"
-- When using the `--no-onboarding` flag
-- After users have used onboarding prompts or made 10+ tool calls
+O comando `npm run start:no-onboarding` acima é um exemplo legado do original; no package.json atual, use `npm start -- --no-onboarding`.
 
-**Debug information:**
-The server will log when onboarding is disabled: `"Onboarding disabled via --no-onboarding flag"`
+**Quando a introdução é desativada automaticamente:**
 
-## Using Different Shells
+- Quando o nome do cliente MCP é "desktop-commander".
+- Ao usar `--no-onboarding`.
+- Após utilizar as orientações ou executar dez ou mais chamadas.
 
-You can specify which shell to use for command execution:
+**Informação de depuração:** o servidor registra a mensagem `"Onboarding disabled via --no-onboarding flag"` quando essa opção é usada.
+
+## Usar shells diferentes
+
+É possível escolher o shell para executar comandos. Os exemplos abaixo são preservados do README original; `execute_command` é uma referência legada. Para o catálogo atual, consulte `start_process` e os parâmetros anunciados pelo cliente MCP.
 
 ```javascript
-// Using default shell (bash or system default)
+// Usar o shell padrão
 execute_command({ "command": "echo $SHELL" })
 
-// Using zsh specifically
+// Usar zsh
 execute_command({ "command": "echo $SHELL", "shell": "/bin/zsh" })
 
-// Using bash specifically
+// Usar bash
 execute_command({ "command": "echo $SHELL", "shell": "/bin/bash" })
 ```
 
-This allows you to use shell-specific features or maintain consistent environments across commands.
+Isso permite usar recursos específicos de cada shell ou manter ambientes consistentes.
 
-1. `execute_command` returns after timeout with initial output
-2. Command continues in background
-3. Use `read_output` with PID to get new output
-4. Use `force_terminate` to stop if needed
+Para comandos de longa duração, o fluxo documentado consiste em receber a saída inicial após o tempo limite, manter o processo em segundo plano, ler novas saídas com a ferramenta correspondente ao catálogo atual e usar `force_terminate` se necessário. As referências antigas a `execute_command` e `read_output` correspondem a `start_process` e `read_process_output` no catálogo apresentado acima.
 
-## Debugging
+## Depuração
 
-If you need to debug the server, you can install it in debug mode:
+Se precisar depurar o servidor, instale o original em modo de depuração:
 
 ```bash
-# Using npx
+# Usando npx
 npx @wonderwhy-er/desktop-commander@latest setup --debug
 
-# Or if installed locally
+# Ou com instalação local
 npm run setup:debug
 ```
 
-This will:
-1. Configure Claude to use a separate "desktop-commander" server
-2. Enable Node.js inspector protocol with `--inspect-brk=9229` flag
-3. Pause execution at the start until a debugger connects
-4. Enable additional debugging environment variables
+Isso:
 
-To connect a debugger:
-- In Chrome, visit `chrome://inspect` and look for the Node.js instance
-- In VS Code, use the "Attach to Node Process" debug configuration
-- Other IDEs/tools may have similar "attach" options for Node.js debugging
+1. Configura o Claude para usar um servidor "desktop-commander" separado.
+2. Habilita o protocolo de inspeção Node.js com `--inspect-brk=9229`.
+3. Pausa a execução inicial até conectar o depurador.
+4. Ativa variáveis adicionais de depuração.
 
-Important debugging notes:
-- The server will pause on startup until a debugger connects (due to the `--inspect-brk` flag)
-- If you don't see activity during debugging, ensure you're connected to the correct Node.js process
-- Multiple Node processes may be running; connect to the one on port 9229
-- The debug server is identified as "desktop-commander-debug" in Claude's MCP server list
+Para conectar um depurador:
 
-Troubleshooting:
-- If Claude times out while trying to use the debug server, your debugger might not be properly connected
-- When properly connected, the process will continue execution after hitting the first breakpoint
-- You can add additional breakpoints in your IDE once connected
+- No Chrome, acesse `chrome://inspect` e procure a instância Node.js.
+- No VS Code, use a configuração "Attach to Node Process".
+- Outras IDEs podem oferecer opções equivalentes.
 
-## Model Context Protocol Integration
+**Observações:**
 
-This project extends the MCP Filesystem Server to enable:
-- Local server support in Claude Desktop
-- Full system command execution
-- Process management
-- File operations
-- Code editing with search/replace blocks
+- A execução pausa inicialmente pela opção `--inspect-brk`.
+- Se não observar atividade, confirme o processo Node.js correto.
+- Podem existir vários processos Node; conecte o processo na porta 9229.
+- O servidor de depuração é identificado como "desktop-commander-debug" na lista MCP do Claude.
 
-Created as part of exploring Claude MCPs: https://youtube.com/live/TlbjFDbl5Us
+**Solução de problemas:**
 
-## Support Desktop Commander
+- Se o Claude atingir o tempo limite, confira a conexão do depurador.
+- Após a conexão, continue a execução a partir do primeiro ponto de interrupção.
+- Adicione outros pontos de interrupção na IDE quando necessário.
+
+## Integração com Model Context Protocol
+
+O projeto estende o MCP Filesystem Server para permitir:
+
+- Servidor local no Claude Desktop.
+- Execução de comandos do sistema.
+- Gerenciamento de processos.
+- Operações de arquivos.
+- Edição de código por blocos de pesquisa/substituição.
+
+O original foi criado durante a exploração dos MCPs do Claude: https://youtube.com/live/TlbjFDbl5Us
+
+<a id="roadmap"></a>
+
+## Roteiro e pendências
+
+- Integrar o login e o consentimento React existentes no fork.
+- Adaptar o protocolo remoto ao servidor e ao Supabase da CentralDark, preservando segurança, revogação e isolamento de sessões.
+- Publicar e testar o pacote NPM próprio.
+- Publicar a interface de pareamento e validar o domínio antes de alterar a infraestrutura atual.
+- Manter o painel administrativo para uma etapa posterior.
+
+<a id="support-desktop-commander"></a>
+
+## Apoie o Desktop Commander original
 
 <div align="center">
-  <h3>📢 SUPPORT THIS PROJECT</h3>
-  <p><strong>Desktop Commander MCP is free and open source, but needs your support to thrive!</strong></p>
-  
+  <h3>📢 APOIE O PROJETO ORIGINAL</h3>
+  <p><strong>O Desktop Commander MCP é livre e de código aberto; o apoio da comunidade ajuda seu desenvolvimento.</strong></p>
   <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; margin: 20px 0; border: 2px solid #007bff;">
-    <p>Our philosophy is simple: we don't want you to pay for it if you're not successful. But if Desktop Commander contributes to your success, please consider contributing to ours.</p>
-    <p><strong>Ways to support:</strong></p>
+    <p>A filosofia dos autores é simples: não querem que você pague se a ferramenta não ajudar. Se o Desktop Commander contribui para seu sucesso, considere apoiar o projeto original.</p>
+    <p><strong>Formas de apoiar:</strong></p>
     <ul style="list-style-type: none; padding: 0;">
-      <li>🌟 <a href="https://github.com/sponsors/wonderwhy-er"><strong>GitHub Sponsors</strong></a> - Recurring support</li>
-      <li>☕ <a href="https://www.buymeacoffee.com/wonderwhyer"><strong>Buy Me A Coffee</strong></a> - One-time contributions</li>
-      <li>💖 <a href="https://www.patreon.com/c/EduardsRuzga"><strong>Patreon</strong></a> - Become a patron and support us monthly</li>
-      <li>⭐ <a href="https://github.com/wonderwhy-er/DesktopCommanderMCP"><strong>Star on GitHub</strong></a> - Help others discover the project</li>
+      <li>🌟 <a href="https://github.com/sponsors/wonderwhy-er"><strong>GitHub Sponsors</strong></a> — apoio recorrente</li>
+      <li>☕ <a href="https://www.buymeacoffee.com/wonderwhyer"><strong>Buy Me A Coffee</strong></a> — contribuições pontuais</li>
+      <li>💖 <a href="https://www.patreon.com/c/EduardsRuzga"><strong>Patreon</strong></a> — apoio mensal</li>
+      <li>⭐ <a href="https://github.com/wonderwhy-er/DesktopCommanderMCP"><strong>Estrela no GitHub</strong></a> — ajude outras pessoas a descobrir o projeto</li>
     </ul>
   </div>
 </div>
 
+### ❤️ Galeria de apoiadores
 
-### ❤️ Supporters Hall of Fame
-
-Generous supporters are featured here. Thank you for helping make this project possible!
+Apoiadores do projeto original. Obrigado por tornar o projeto possível!
 
 <div align="center">
 <table>
@@ -1039,116 +1143,146 @@ Generous supporters are featured here. Thank you for helping make this project p
 </div>
 
 <details>
-  <summary><strong>Why your support matters</strong></summary>
-  <p>Your support allows us to:</p>
+  <summary><strong>Por que seu apoio importa</strong></summary>
+  <p>O apoio permite aos autores:</p>
   <ul>
-    <li>Continue active development and maintenance</li>
-    <li>Add new features and integrations</li>
-    <li>Improve compatibility across platforms</li>
-    <li>Provide better documentation and examples</li>
-    <li>Build a stronger community around the project</li>
+    <li>Continuar o desenvolvimento e a manutenção.</li>
+    <li>Adicionar recursos e integrações.</li>
+    <li>Melhorar a compatibilidade entre plataformas.</li>
+    <li>Oferecer melhor documentação e exemplos.</li>
+    <li>Fortalecer a comunidade em torno do projeto.</li>
   </ul>
 </details>
 
-## Website
+<a id="website"></a>
 
-Visit our official website at [https://desktopcommander.app/](https://desktopcommander.app/) for the latest information, documentation, and updates.
+## Site
 
-## Media
+- **CentralDark:** [mcp.centralldark.com](https://mcp.centralldark.com) — interface própria em preparação.
+- **Projeto original:** [desktopcommander.app](https://desktopcommander.app/) — informações, documentação e atualizações do Desktop Commander.
 
-Learn more about this project through these resources:
+<a id="media"></a>
 
-### Article
-[Claude with MCPs replaced Cursor & Windsurf. How did that happen?](https://wonderwhy-er.medium.com/claude-with-mcps-replaced-cursor-windsurf-how-did-that-happen-c1d1e2795e96) - A detailed exploration of how Claude with Model Context Protocol capabilities is changing developer workflows.
+## Mídia
 
-### Video
-[Claude Desktop Commander Video Tutorial](https://www.youtube.com/watch?v=ly3bed99Dy8) - Watch how to set up and use the Commander effectively.
+Saiba mais sobre o projeto original pelos recursos abaixo.
 
-### Publication at AnalyticsIndiaMag
-[![analyticsindiamag.png](testemonials%2Fanalyticsindiamag.png)
-This Developer Ditched Windsurf, Cursor Using Claude with MCPs](https://analyticsindiamag.com/ai-features/this-developer-ditched-windsurf-cursor-using-claude-with-mcps/)
+### Artigo
 
-### Community
-Join our [Discord server](https://discord.gg/kQ27sNnZr7) to get help, share feedback, and connect with other users.
+[Claude com MCPs substituiu Cursor e Windsurf. Como aconteceu?](https://wonderwhy-er.medium.com/claude-with-mcps-replaced-cursor-windsurf-how-did-that-happen-c1d1e2795e96) — análise de como o Claude com Model Context Protocol altera fluxos de desenvolvimento.
 
-## Testimonials
+### Vídeo
 
-[![It's a life saver! I paid Claude + Cursor currently which I always feel it's kind of duplicated. This solves the problem ultimately. I am so happy. Thanks so much. Plus today Claude has added the web search support. With this MCP + Internet search, it writes the code with the latest updates. It's so good when Cursor doesn't work sometimes or all the fast requests are used.](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img.png) https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyyBt6_ShdDX_rIOad4AaABAg
-](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyyBt6_ShdDX_rIOad4AaABAg
-)
+[Tutorial em vídeo do Claude Desktop Commander](https://www.youtube.com/watch?v=ly3bed99Dy8) — veja como configurar e usar o Commander.
 
-[![This is the first comment I've ever left on a youtube video, THANK YOU! I've been struggling to update an old Flutter app in Cursor from an old pre null-safety version to a current version and implemented null-safety using Claude 3.7. I got most of the way but had critical BLE errors that I spent days trying to resolve with no luck. I tried Augment Code but it didn't get it either. I implemented your MCP in Claude desktop and was able to compare the old and new codebase fully, accounting for the updates in the code, and fix the issues in a couple of hours. A word of advice to people trying this, be sure to stage changes and commit when appropriate to be able to undo unwanted changes. Amazing!](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_1.png)
-https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgztdHvDMqTb9jiqnf54AaABAg](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgztdHvDMqTb9jiqnf54AaABAg
-)
+### Publicação no AnalyticsIndiaMag
 
-[![Great! I just used Windsurf, bought license a week ago, for upgrading old fullstack socket project and it works many times good or ok but also many times runs away in cascade and have to revert all changes losing hundereds of cascade tokens. In just a week down to less than 100 tokens and do not want to buy only 300 tokens for 10$. This Claude MCP ,bought claude Pro finally needed but wanted very good reason to also have next to ChatGPT, and now can code as much as I want not worrying about token cost.
-Also this is much more than code editing it is much more thank you for great video!](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_2.png)
-https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyQFTmYLJ4VBwIlmql4AaABAg](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyQFTmYLJ4VBwIlmql4AaABAg)
+[![AnalyticsIndiaMag](testemonials%2Fanalyticsindiamag.png)
+Este desenvolvedor deixou Windsurf e Cursor usando Claude com MCPs](https://analyticsindiamag.com/ai-features/this-developer-ditched-windsurf-cursor-using-claude-with-mcps/)
 
-[![it is a great tool, thank you, I like using it, as it gives claude an ability to do surgical edits, making it more like a human developer.](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_3.png)
-https://www.youtube.com/watch?v=ly3bed99Dy8&lc=Ugy4-exy166_Ma7TH-h4AaABAg](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=Ugy4-exy166_Ma7TH-h4AaABAg)
+### Comunidade
 
-[![You sir are my hero. You've pretty much summed up and described my experiences of late, much better than I could have. Cursor and Windsurf both had me frustrated to the point where I was almost yelling at my computer screen. Out of whimsy, I thought to myself why not just ask Claude directly, and haven't looked back since.
-Claude first to keep my sanity in check, then if necessary, engage with other IDEs, frameworks, etc. I thought I was the only one, glad to see I'm not lol.
-33
-1](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_4.png)
-https://medium.com/@pharmx/you-sir-are-my-hero-62cff5836a3e](https://medium.com/@pharmx/you-sir-are-my-hero-62cff5836a3e)
+Participe do [Discord do projeto original](https://discord.gg/kQ27sNnZr7) para pedir ajuda, enviar sugestões e conversar com outros usuários.
 
-If you find this project useful, please consider giving it a ⭐ star on GitHub! This helps others discover the project and encourages further development.
+<a id="testimonials"></a>
 
-We welcome contributions from the community! Whether you've found a bug, have a feature request, or want to contribute code, here's how you can help:
+## Depoimentos
 
-- **Found a bug?** Open an issue at [github.com/wonderwhy-er/DesktopCommanderMCP/issues](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues)
-- **Have a feature idea?** Submit a feature request in the issues section
-- **Want to contribute code?** Fork the repository, create a branch, and submit a pull request
-- **Questions or discussions?** Start a discussion in the GitHub Discussions tab
+Os depoimentos a seguir pertencem ao **Desktop Commander original**, não a usuários do fork CentralDark. Tradução livre dos relatos; as imagens e links mantêm a publicação original.
 
-All contributions, big or small, are greatly appreciated!
+[![Depoimento sobre evitar assinaturas duplicadas e aproveitar pesquisa na web com MCP](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img.png)](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyyBt6_ShdDX_rIOad4AaABAg)
 
-If you find this tool valuable for your workflow, please consider [supporting the project](https://www.buymeacoffee.com/wonderwhyer).
+"Salvou minha vida! Eu pagava Claude e Cursor e sempre sentia que havia uma duplicação. Isso resolve o problema. Estou muito feliz. Muito obrigado. Hoje o Claude também adicionou pesquisa na web. Com esse MCP e a pesquisa na internet, ele escreve código com atualizações recentes. É ótimo quando o Cursor falha ou acabam as solicitações rápidas."
 
-## Frequently Asked Questions
+[![Depoimento sobre atualizar um aplicativo Flutter e corrigir BLE](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_1.png)](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgztdHvDMqTb9jiqnf54AaABAg)
 
-Here are answers to some common questions. For a more comprehensive FAQ, see our [detailed FAQ document](FAQ.md).
+"É o primeiro comentário que deixo em um vídeo do YouTube. Obrigado! Eu tentava atualizar um aplicativo Flutter antigo, anterior à segurança contra nulos, no Cursor, e implementei a segurança contra nulos com Claude 3.7. Avancei bastante, mas passei dias sem resolver erros críticos de BLE. O Augment Code também não conseguiu. Com seu MCP no Claude Desktop, comparei toda a base antiga com a nova, considerando as atualizações, e corrigi os problemas em poucas horas. Um conselho: prepare e registre commits quando apropriado para poder desfazer mudanças indesejadas. Incrível!"
 
-### What is Desktop Commander?
-It's an MCP tool that enables Claude Desktop to access your file system and terminal, turning Claude into a versatile assistant for coding, automation, codebase exploration, and more.
+[![Depoimento sobre atualizar um projeto full-stack e evitar retrabalho](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_2.png)](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=UgyQFTmYLJ4VBwIlmql4AaABAg)
 
-### How is this different from Cursor/Windsurf?
-Unlike IDE-focused tools, Claude Desktop Commander provides a solution-centric approach that works with your entire OS, not just within a coding environment. Claude reads files in full rather than chunking them, can work across multiple projects simultaneously, and executes changes in one go rather than requiring constant review.
+"Ótimo! Comprei uma licença do Windsurf uma semana atrás para atualizar um projeto full-stack antigo com sockets. Em muitas ocasiões funcionou bem, mas em outras o Cascade saiu do rumo e precisei desfazer mudanças, perdendo centenas de tokens. Em uma semana restavam menos de cem tokens e eu não queria comprar apenas trezentos por dez dólares. Com esse MCP do Claude, finalmente tive um bom motivo para assinar o Claude Pro junto com o ChatGPT. Agora consigo programar sem me preocupar da mesma forma com o custo de tokens. Além disso, faz muito mais que editar código. Obrigado pelo vídeo!"
 
-### Do I need to pay for API credits?
-No. This tool works with Claude Desktop's standard Pro subscription ($20/month), not with API calls, so you won't incur additional costs beyond the subscription fee.
+[![Depoimento sobre edições pontuais de código](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_3.png)](https://www.youtube.com/watch?v=ly3bed99Dy8&lc=Ugy4-exy166_Ma7TH-h4AaABAg)
 
-### Does Desktop Commander automatically update?
-Yes, when installed through npx or Smithery, Desktop Commander automatically updates to the latest version when you restart Claude. No manual update process is needed.
+"É uma ótima ferramenta, obrigado. Gosto de usá-la porque dá ao Claude a capacidade de fazer edições pontuais, tornando-o mais parecido com um desenvolvedor humano."
 
-### What are the most common use cases?
-- Exploring and understanding complex codebases
-- Generating diagrams and documentation
-- Automating tasks across your system
-- Working with multiple projects simultaneously
-- Making surgical code changes with precise control
+[![Depoimento sobre usar Claude diretamente antes de outras IDEs](https://raw.githubusercontent.com/wonderwhy-er/ClaudeComputerCommander/main/testemonials/img_4.png)](https://medium.com/@pharmx/you-sir-are-my-hero-62cff5836a3e)
 
-### I'm having trouble installing or using the tool. Where can I get help?
-Join our [Discord server](https://discord.gg/kQ27sNnZr7) for community support, check the [GitHub issues](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues) for known problems, or review the [full FAQ](FAQ.md) for troubleshooting tips. You can also visit our [website FAQ section](https://desktopcommander.app#faq) for a more user-friendly experience. If you encounter a new issue, please consider [opening a GitHub issue](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues/new) with details about your problem.
+"Você é meu herói. Resumiu minhas experiências recentes melhor do que eu conseguiria. Cursor e Windsurf me frustravam a ponto de quase gritar com a tela. Por impulso, pensei em perguntar diretamente ao Claude e não voltei atrás. Claude primeiro, para manter a sanidade; depois, se necessário, outras IDEs e frameworks. Achava que era o único; bom saber que não."
 
-### How do I report security vulnerabilities?
-Please create a [GitHub Issue](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues) with detailed information about any security vulnerabilities you discover. See our [Security Policy](SECURITY.md) for complete guidelines on responsible disclosure.
+Se o projeto original for útil, considere dar uma ⭐ no GitHub para ajudar outras pessoas a descobri-lo e incentivar seu desenvolvimento.
 
-## Data Collection & Privacy
+<a id="contributing"></a>
 
-Desktop Commander collects limited, pseudonymous telemetry to improve the tool. We do not collect file contents, file paths, or command arguments as telemetry.
+## Contribuição
 
-This is separate from the [local tool history and audit logs](#local-tool-history-and-audit-logs), which stay on the machine running Desktop Commander and may contain tool arguments and bounded result previews.
+Contribuições são bem-vindas. Para problemas, ideias e melhorias do fork, use as [issues da CentralDark](https://github.com/ServerVpss/CentralDarkDesktopCommanderMCP/issues) e preserve a compatibilidade upstream.
 
-**Opt-out:** Ask Claude to "disable Desktop Commander telemetry" or set `"telemetryEnabled": false` in your config.
+- **Encontrou um erro?** Se for do original, abra uma issue em [wonderwhy-er/DesktopCommanderMCP/issues](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues).
+- **Tem uma ideia?** Envie uma solicitação de recurso na seção Issues.
+- **Quer contribuir com código?** Crie uma branch em um fork e envie um pull request.
+- **Perguntas ou discussões?** Use a seção GitHub Discussions quando disponível.
 
-For complete details, see our [Privacy Policy](PRIVACY.md).
+Toda contribuição é bem-vinda. Se a ferramenta original for valiosa para seu trabalho, considere [apoiar os autores](https://www.buymeacoffee.com/wonderwhyer).
 
-## Verifications
-[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/25ff7a06-58bc-40b8-bd79-ebb715140f1a)
+<a id="frequently-asked-questions"></a>
 
-## License
+## Perguntas frequentes
 
-MIT
+Veja também o [documento FAQ completo do original](FAQ.md).
+
+### O que é Desktop Commander?
+
+É uma ferramenta MCP que permite ao Claude Desktop acessar o sistema de arquivos e o terminal autorizado, tornando-o um assistente versátil para programação, automação e exploração de código.
+
+### Qual a diferença em relação ao Cursor/Windsurf?
+
+Em vez de se limitar ao ambiente de uma IDE, o Desktop Commander trabalha com recursos do sistema operacional autorizados. O cliente pode ler arquivos, trabalhar em vários projetos e executar mudanças em blocos. A necessidade de revisão depende das permissões e da configuração.
+
+### Preciso pagar créditos de API?
+
+Na documentação original, o uso pelo Claude Desktop com assinatura Pro (citada como US$ 20/mês) dispensa chamadas diretas de API e seus respectivos créditos. A cobrança, disponibilidade e limites dependem do cliente utilizado e de seu plano. Isso não é promessa de gratuidade do futuro serviço CentralDark.
+
+### O Desktop Commander atualiza automaticamente?
+
+O original documenta atualizações automáticas para instalações por npx ou Smithery ao reiniciar o Claude. Instalações locais pelo Git exigem atualização manual. O pacote CentralDark ainda está em preparação.
+
+### Quais são os usos mais comuns?
+
+- Explorar e entender bases de código complexas.
+- Gerar diagramas e documentação.
+- Automatizar tarefas no sistema.
+- Trabalhar em vários projetos.
+- Realizar alterações pontuais no código.
+
+### Estou com problemas de instalação ou uso. Onde encontro ajuda?
+
+Participe do [Discord original](https://discord.gg/kQ27sNnZr7), consulte as [issues do original](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues), o [FAQ completo](FAQ.md) ou a [seção de perguntas do site](https://desktopcommander.app#faq). Se encontrar um problema novo no original, [abra uma issue](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues/new) com os detalhes. Para problemas exclusivos do fork, use as issues da CentralDark.
+
+### Como relato vulnerabilidades de segurança?
+
+Consulte primeiro a [política de segurança](SECURITY.md) e seus canais de divulgação responsável. Não publique credenciais nem detalhes exploráveis em issues abertas. O [repositório original](https://github.com/wonderwhy-er/DesktopCommanderMCP/issues) mantém seus próprios canais.
+
+<a id="data-collection--privacy"></a>
+
+## Coleta de dados e privacidade
+
+O Desktop Commander original coleta telemetria limitada e pseudonimizada para melhorar a ferramenta. Segundo sua documentação, não coleta conteúdo ou caminhos de arquivos nem argumentos de comandos como telemetria.
+
+Isso é separado do [histórico local de ferramentas e auditoria](#local-tool-history-and-audit-logs), que permanece na máquina que executa o Desktop Commander e pode conter argumentos e prévias limitadas de resultados.
+
+**Desativar telemetria:** peça ao cliente para desativar a telemetria do Desktop Commander ou defina `"telemetryEnabled": false` na configuração.
+
+Para detalhes, consulte a [política de privacidade original](PRIVACY.md). O fork não deve transferir dados de dispositivos CentralDark para serviços externos sem autorização e avaliação da integração.
+
+## Verificações
+
+Selos de verificação do projeto original:
+
+[![Verificação MseeP do original](https://mseep.ai/badge.svg)](https://mseep.ai/app/25ff7a06-58bc-40b8-bd79-ebb715140f1a)
+
+<a id="license"></a>
+
+## Licença
+
+[MIT](LICENSE). Copyright e créditos do Desktop Commander original preservados.

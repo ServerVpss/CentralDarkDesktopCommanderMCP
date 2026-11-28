@@ -1,0 +1,44 @@
+name: CentralDark pairing web
+on:
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/centraldark-pairing-web.yml'
+  push:
+    branches: [main, 'centraldark/remote-pairing-web']
+    paths:
+      - 'web/**'
+      - '.github/workflows/centraldark-pairing-web.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run typecheck
+      - name: Build React with CentralDark public configuration
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          node -e 'const e=process.env; if(e.VITE_SUPABASE_URL!=="https://lyoigsqluyktoclwdaft.supabase.co" || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(e.VITE_SUPABASE_PUBLISHABLE_KEY||"")) { console.error("Missing or invalid public Supabase configuration"); process.exit(1); }'
+          npm run build
+          node -e 'const fs=require("node:fs"); const p="dist/assets"; const js=fs.readdirSync(p).filter(f=>f.endsWith(".js")).map(f=>fs.readFileSync(p+"/"+f,"utf8")).join("\n"); if(!js.includes(process.env.VITE_SUPABASE_PUBLISHABLE_KEY)||!js.includes(process.env.VITE_SUPABASE_URL)||/sb_secret_[A-Za-z0-9_-]{12,}/.test(js)) { console.error("Build public configuration verification failed"); process.exit(1); }'
+      - name: Upload verified React build
+        uses: actions/upload-artifact@v4
+        with:
+          name: centraldark-pairing-web-dist
+          path: web/dist/
+          if-no-files-found: error
+          retention-days: 7
