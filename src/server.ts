@@ -64,6 +64,8 @@ import {
     getSupportedParams,
     buildUnsupportedParamsWarning,
 } from './utils/unsupportedParams.js';
+import { findWindowsNotepadContext, notepadContextEnabled } from './tools/windows-notepad.js';
+import { validatePath } from './tools/filesystem.js';
 import { getConfig, setConfigValue } from './tools/config.js';
 import { getUsageStats } from './tools/usage.js';
 import { giveFeedbackToDesktopCommander } from './tools/feedback.js';
@@ -290,6 +292,7 @@ deferLog('info', 'Setting up request handlers...');
  * Check if a tool should be included based on current client
  */
 function shouldIncludeTool(toolName: string): boolean {
+    if (toolName === 'notepad_search_context' && !notepadContextEnabled()) return false;
     // Exclude these tools for desktop-commander client (DC-specific meta-tools not useful when DC itself is the client)
     if (currentClient?.name === 'desktop-commander-app') {
         if (toolName === 'give_feedback_to_desktop_commander') {
@@ -364,6 +367,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 },
             },
 
+            // Windows context, local and explicitly enabled; no raw note text.
+            {
+                name: "notepad_search_context",
+                description: "Find candidate Windows Notepad TabState entries matching a literal query. Local Windows opt-in only, subject to allowedDirectories. Returns bounded metadata, not raw note contents. Does not prove active or unsaved status. Never opens or modifies Notepad.",
+                inputSchema: {
+                    type: "object" as const,
+                    properties: {
+                        query: { type: "string", minLength: 3, maxLength: 120 },
+                        limit: { type: "integer", minimum: 1, maximum: 10, default: 10 },
+                    },
+                    required: ["query"],
+                    additionalProperties: false,
+                },
+                annotations: {
+                    title: "Windows - Find Notepad Context",
+                    readOnlyHint: true,
+                    destructiveHint: false,
+                    openWorldHint: false,
+                },
+            },
             // Filesystem tools
             {
                 name: "read_file",
@@ -1206,6 +1229,19 @@ function pathArguments(args: unknown): unknown[] {
 
 async function handleCallToolRequest(request: CallToolRequest): Promise<ServerResult> {
     const { name, arguments: args } = request.params;
+    // Keep personal context queries and matches out of the generic argument/result history.
+    // A device child is independently denied by the existing DC_REMOTE_DEVICE env binding.
+    if (name === "notepad_search_context") {
+        if (!notepadContextEnabled() || request.params._meta?.remote) {
+            return { isError: true, content: [{ type: "text", text: "NOTEPAD_CONTEXT_LOCAL_OPT_IN_REQUIRED" }] };
+        }
+        try {
+            const result = await findWindowsNotepadContext(args, validatePath);
+            return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        } catch {
+            return { isError: true, content: [{ type: "text", text: "NOTEPAD_CONTEXT_INPUT_OR_ACCESS_UNAVAILABLE" }] };
+        }
+    }
     const startTime = Date.now();
     // Hoisted above the try so the finally block can read them when emitting the
     // server_call_tool completion event (duration + status), even on the crash path.
