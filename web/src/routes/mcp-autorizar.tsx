@@ -2,13 +2,13 @@
  * #OBSERVACOES#
  * @owner apps/instinto-superior/src/routes/mcp-autorizar.tsx
  * @doc_ref docs/RECEIPTS/2026-10-25-MCP-VSCODE-PAIRING-UNIFIED-CONSENT.md
- * @last_updated 2026-11-17T21:27:49.471Z
+ * @last_updated 2026-11-28T13:37:00Z
  * @implementado consentimento MCP + pareamento do Bridge/Vibe na mesma UI compacta;
  *  codigo vem da solicitacao criada pelo cliente, sem outro store ou segredo no navegador;
  *  visual a partir do HTML CentralDark em Downloads, sem importar handlers simulados.
- * @pendente prova de autenticacao real, build do host e readback do deploy no mesmo SHA.
+ * @pendente prova visual do retorno em segundo plano e abertura automatica no navegador real.
  */
-import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow } from "@/lib/return-to";
+import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground } from "@/lib/return-to";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
@@ -48,6 +48,12 @@ export default function AutorizarMcp() {
   const [estadoOAuth, alterarEstadoOAuth] = useState<"pending" | "authenticated" | "unconfirmed">("pending");
   const [callbackPendente, alterarCallbackPendente] = useState("");
   const janelaRetorno = useRef<Window | null>(null);
+  const [retornoAutomatico, alterarRetornoAutomatico] = useState(true);
+  const backgroundAttempt = useRef<{url:string; startedAt:number; pending:boolean} | null>(null);
+  const backgroundAbort = useRef<AbortController | null>(null);
+  const launchAttempt = useRef(false);
+  const callbackDeliveryPending = useRef(false);
+  useEffect(() => () => backgroundAbort.current?.abort(), []);
 
   useEffect(() => {
     if (!completion) return;
@@ -60,6 +66,8 @@ export default function AutorizarMcp() {
     async function consultar() {
       if (!ativo) return;
       if (Date.now() >= deadline) {
+        backgroundAbort.current?.abort();
+        backgroundAttempt.current = null;
         alterarEstadoOAuth("unconfirmed");
         alterarCallbackPendente("");
         return;
@@ -82,9 +90,18 @@ export default function AutorizarMcp() {
         const result = await response.json();
         if (!ativo) return;
         if (response.ok && result.ok === true && result.status === "authenticated") {
+          backgroundAbort.current?.abort();
+          backgroundAttempt.current = null;
           alterarEstadoOAuth("authenticated");
           alterarCallbackPendente("");
           return;
+        }
+        if (response.ok && result.ok === true && result.status === "pending" &&
+            backgroundAttempt.current && Date.now() - backgroundAttempt.current.startedAt >= 10_000 &&
+            !backgroundAttempt.current.pending && !callbackDeliveryPending.current) {
+          // Do not replay automatically. Manual alternative only after server
+          // confirms the grant is still pending and the attempt has ended.
+          alterarCallbackPendente(backgroundAttempt.current.url);
         }
         if (response.status === 401 || response.status === 403) {
           alterarEstadoOAuth("unconfirmed");
@@ -99,20 +116,29 @@ export default function AutorizarMcp() {
   }, [completion]);
 
   useEffect(() => {
-    if (estadoOAuth !== "authenticated") return;
-    // Never close the callback before the token exchange is confirmed.
+    if (estadoOAuth !== "authenticated" || !params) return;
+    const appUrl = oauthClientPresentation(params).appUrl;
+    const closeAfterLeaving = () => {
+      // Do not dismiss a visible browser confirmation. A hidden tab after
+      // handoff is only a cleanup opportunity, not proof the native app opened.
+      if (launchAttempt.current && document.visibilityState === "hidden") {
+        try { window.close(); } catch { /* Browser decides. */ }
+      }
+    };
+    document.addEventListener("visibilitychange", closeAfterLeaving);
     closeOAuthReturnWindow(janelaRetorno.current);
     const timer = window.setTimeout(() => {
       closeOAuthReturnWindow(janelaRetorno.current);
       janelaRetorno.current = null;
-      // A consent tab opened by another web window can return to its opener.
-      // External native browsers may forbid this; keep the manual option.
-      if (window.opener) {
+      if (appUrl && retornoAutomatico && !launchAttempt.current) {
+        launchAttempt.current = true;
+        try { window.location.assign(appUrl); } catch { /* Manual link remains available. */ }
+      } else if (!appUrl && window.opener) {
         try { window.opener.focus(); window.close(); } catch { /* Manual return remains available. */ }
       }
     }, 3000);
-    return () => window.clearTimeout(timer);
-  }, [estadoOAuth]);
+    return () => { window.clearTimeout(timer); document.removeEventListener("visibilitychange", closeAfterLeaving); };
+  }, [estadoOAuth, params, retornoAutomatico]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -166,9 +192,10 @@ export default function AutorizarMcp() {
     alterarEnviando(true);
     alterarErroEnvio("");
     let retorno: Window | null = null;
-    // Reserva a janela no gesto do usuário apenas para o retorno loopback.
-    // Clientes HTTPS externos conservam a navegação original.
-    if (!dispositivo && isLoopbackOAuthCallback(params.get("redirect_uri") || "")) {
+    // Known Codex callback attempts background first; other clients retain
+    // the previously supported navigation.
+    const tentarSegundoPlano = apresentacao.appUrl === "codex://settings";
+    if (!dispositivo && !tentarSegundoPlano && isLoopbackOAuthCallback(params.get("redirect_uri") || "")) {
       retorno = reserveOAuthReturnWindow();
     }
     try {
@@ -209,6 +236,18 @@ export default function AutorizarMcp() {
       if (receipt && isLoopbackOAuthCallback(destino.toString())) {
         alterarCompletion(receipt);
         alterarEstadoOAuth("pending");
+        if (canDeliverOAuthInBackground(params, destino)) {
+          const controller = new AbortController();
+          backgroundAbort.current = controller;
+          const attempt = {url:destino.href, startedAt:Date.now(), pending:true};
+          backgroundAttempt.current = attempt;
+          const timeout = window.setTimeout(() => controller.abort(), 8000);
+          void deliverOAuthInBackground(params, destino, controller.signal).catch(() => {
+            // Permission or transport failure does not mean the code was
+            // never delivered. Wait for server receipt/pending state.
+          }).finally(() => { attempt.pending = false; window.clearTimeout(timeout); });
+          return;
+        }
         if (retorno && !retorno.closed) {
           try {
             janelaRetorno.current = retorno;
@@ -268,8 +307,11 @@ export default function AutorizarMcp() {
               {!dispositivo && (
                 <>
                   <p className="text-xs text-muted-foreground">Se a janela auxiliar continuar aberta, pode fechá-la. Se iniciou pelo terminal, retorne ao terminal.</p>
-                  {apresentacao.appUrl && <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
-                    href={apresentacao.appUrl}>Abrir aplicativo ChatGPT (opcional)</a>}
+                  {apresentacao.appUrl && <>
+                    {retornoAutomatico && <p className="text-xs text-muted-foreground">Retorno automático em 3 segundos. Confirme a abertura se o navegador solicitar.</p>}
+                    <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
+                      href={apresentacao.appUrl} onClick={() => {launchAttempt.current = true;}}>Abrir aplicativo ChatGPT (alternativa)</a>
+                  </>}
                   <Button type="button" variant="outline" onClick={() => {
                     closeOAuthReturnWindow(janelaRetorno.current);
                     window.close();
@@ -290,6 +332,8 @@ export default function AutorizarMcp() {
                 <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
                   href={callbackPendente}
                   onClick={event => {
+                    callbackDeliveryPending.current = true;
+                    backgroundAttempt.current = null;
                     const popup = reserveOAuthReturnWindow();
                     // If the popup is blocked, the original registered link still
                     // works in this tab. Never retry an already delivered code.
@@ -384,6 +428,13 @@ export default function AutorizarMcp() {
                   <p role="alert" className="text-xs text-destructive">
                     Solicitação incompleta. Reabra a conexão pelo aplicativo solicitante.
                   </p>
+                )}
+                {apresentacao.appUrl && !dispositivo && (
+                  <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <input type="checkbox" className="mt-0.5" checked={retornoAutomatico}
+                      onChange={event => alterarRetornoAutomatico(event.target.checked)} disabled={enviando}/>
+                    Abrir o aplicativo automaticamente após autenticar (desmarque se iniciou pelo terminal).
+                  </label>
                 )}
                 <div className="grid grid-cols-2 gap-2">
                   <Button type="button" variant="outline" onClick={() => window.history.back()}>

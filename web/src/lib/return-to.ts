@@ -79,8 +79,8 @@ export function oauthCompletionReceipt(result: {consent_receipt?: unknown; conse
 
 
 // Client identity and callback type are separate from the browser OS. The Codex
-// CIMD is shared by the CLI and desktop; do not launch a desktop app automatically
-// merely because the loopback client or the browser is running on Windows.
+// CIMD is shared by CLI and desktop; the consent screen offers a return
+// preference (desktop by default, terminal users can opt out).
 export function oauthClientPresentation(request: URLSearchParams): {name: string; kind: "web" | "native" | "unknown"; appUrl?: string} {
   const fallback = {name: request.get("client_name") || request.get("client_id") || "Cliente MCP", kind: "unknown" as const};
   if (request.getAll("client_id").length !== 1 || request.getAll("redirect_uri").length !== 1) return fallback;
@@ -118,4 +118,24 @@ export function reserveOAuthReturnWindow(): Window | null {
 }
 export function closeOAuthReturnWindow(popup: Pick<Window, "close"> | null): void {
   try { popup?.close(); } catch { /* Browser isolation may prevent closing. */ }
+}
+
+
+// Only the official Codex CIMD and its numeric-loopback /callback may use
+// the non-navigating transport. Never fetch arbitrary DCR callback paths.
+export function canDeliverOAuthInBackground(request: URLSearchParams, destination: URL): boolean {
+  if (oauthClientPresentation(request).appUrl !== "codex://settings") return false;
+  try {
+    const verified = validatedOAuthCallback(destination.href, request);
+    return isLoopbackOAuthCallback(verified.href) &&
+      ["127.0.0.1", "[::1]"].includes(verified.hostname) &&
+      verified.pathname === "/callback" && Boolean(verified.port);
+  } catch { return false; }
+}
+export async function deliverOAuthInBackground(request: URLSearchParams, destination: URL, signal: AbortSignal): Promise<void> {
+  if (!canDeliverOAuthInBackground(request, destination)) throw new Error("CALLBACK_BACKGROUND_NOT_ALLOWED");
+  // An opaque response is NOT a success receipt. Server consent_status is
+  // authoritative. Do not include cookies, bearer, referrer or redirects.
+  await fetch(destination.href, {method:"GET", mode:"no-cors", credentials:"omit",
+    referrerPolicy:"no-referrer", redirect:"error", cache:"no-store", signal});
 }

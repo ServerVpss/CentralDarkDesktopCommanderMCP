@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow } from "../src/lib/return-to.ts";
+import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt, oauthClientPresentation, reserveOAuthReturnWindow, closeOAuthReturnWindow, canDeliverOAuthInBackground, deliverOAuthInBackground } from "../src/lib/return-to.ts";
 test("continua a solicitação no mesmo domínio",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b&pair_code=1234"),"/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b"));
 test("rejeita redirecionamento externo e caminhos não autorizados",()=>{for(const p of ["https://evil.example/mcp-autorizar?client_id=a","//evil.example/","/auth?next=x","/mcp-autorizar?client_id=a#token","/mcp-autorizar?pair_id=a","/mcp-autorizar?client_id=a&client_id=b"])assert.equal(safePairingPath(p),null);});
 test("não preserva tokens nem parâmetros desconhecidos",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=a&access_token=secret&refresh_token=secret"),"/mcp-autorizar?client_id=a"));
@@ -91,4 +91,30 @@ test("janela auxiliar tem referência rastreável e não ganha acesso ao opener"
   }finally{
     if(oldWindow)Object.defineProperty(globalThis,"window",oldWindow);else Reflect.deleteProperty(globalThis,"window");
   }
+});
+
+test("retorno invisível apenas para CIMD Codex, loopback numérico e caminho exato",()=>{
+  const request=new URLSearchParams({client_id:"https://chatgpt.com/oauth/codex/client.json",redirect_uri:"http://127.0.0.1:52853/callback",state:"fixture"});
+  const destination=new URL("http://127.0.0.1:52853/callback?code=fixture&state=fixture");
+  assert.equal(canDeliverOAuthInBackground(request,destination),true);
+  for(const url of [destination.href.replace("52853","52854"),destination.href.replace("127.0.0.1","evil.invalid"),destination.href.replace("/callback","/other"),destination.href.replace("state=fixture","state=wrong")])
+    assert.equal(canDeliverOAuthInBackground(request,new URL(url)),false);
+  const wrong=new URLSearchParams(request);wrong.set("client_id","mcp_unknown");
+  assert.equal(canDeliverOAuthInBackground(wrong,destination),false);
+  const other=new URLSearchParams(request);other.set("redirect_uri","http://127.0.0.1:52853/other");
+  assert.equal(canDeliverOAuthInBackground(other,new URL(destination.href.replace("/callback","/other"))),false);
+});
+test("transporte invisível omite credenciais, referrer e redirect; não interpreta resposta opaca",async()=>{
+  const request=new URLSearchParams({client_id:"https://chatgpt.com/oauth/codex/client.json",redirect_uri:"http://127.0.0.1:52853/callback",state:"fixture"});
+  const destination=new URL("http://127.0.0.1:52853/callback?code=fixture&state=fixture");
+  const original=globalThis.fetch;
+  const calls:Array<{url:unknown;init:RequestInit|undefined}>=[];
+  const signal=new AbortController().signal;
+  globalThis.fetch=(async(url:unknown,init?:RequestInit)=>{calls.push({url,init});return {type:"opaque"} as Response;}) as typeof fetch;
+  try {
+    await deliverOAuthInBackground(request,destination,signal);
+    assert.deepEqual(calls,[{url:destination.href,init:{method:"GET",mode:"no-cors",credentials:"omit",referrerPolicy:"no-referrer",redirect:"error",cache:"no-store",signal}}]);
+    await assert.rejects(()=>deliverOAuthInBackground(request,new URL("https://evil.invalid/callback?code=fixture"),signal),/NOT_ALLOWED/);
+    assert.equal(calls.length,1);
+  } finally {globalThis.fetch=original;}
 });

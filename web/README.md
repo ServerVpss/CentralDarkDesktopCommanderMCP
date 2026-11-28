@@ -42,3 +42,10 @@ Backend: [Core e99a9b4](https://github.com/ServerVpss/CentralDark/commit/e99a9b4
 - Loopback: acompanhar recibo autenticado, guardar a referência de toda janela criada inclusive na alternativa manual, fechar somente após emissão da sessão e repetir a tentativa de fechamento após três segundos. Se o navegador bloquear a janela, a alternativa manual utiliza a mesma URL registrada nesta aba.
 - CIMD oficial do Codex é comum ao terminal e ao desktop. Não inferir o aplicativo de origem pelo Windows. Depois da confirmação, o botão opcional usa o deep link documentado `codex://settings` para abrir o aplicativo ChatGPT; não representa retorno à conversa original e não recebe código, token ou state. A tela também oferece tentativa manual de fechamento/retorno. Clientes desconhecidos não ganham deep link.
 - O navegador controla o fechamento e a confirmação de abertura de aplicativos. Nenhuma configuração de isolamento é desativada.
+
+
+### Retorno local em segundo plano
+- Codex (CIMD oficial, loopback numérico, porta e caminho /callback exatos): primeiro tenta GET sem navegação, sem cookies, bearer, referrer nem redirects. CSP permite somente os dois hosts numéricos loopback no connect-src; não habilita IPs de LAN, não desativa proteção do navegador.
+- A resposta opaca nunca comprova autenticação. O recibo anterior continua sendo a única prova. Em caso de bloqueio, alternativa manual só após consentimento ainda pending e tentativa encerrada; nunca repetir código automaticamente.
+- Após confirmação, tenta abrir `codex://settings` uma vez, 3 segundos depois. O consentimento mostra a preferência de retorno (desmarcável para CLI). Chrome pode exigir ação direta; botão alternativo permanece. Tenta fechar a aba somente após ficar oculta ou por ação manual, sem alegar prova de aceite do protocolo.
+- HTTPS externo e pareamento mantêm navegação original. Não distingue edição estável/Beta por CIMD; a associação de protocolo é do sistema operacional. Acesso loopback depende da permissão do navegador, não é forçado. Prova em navegador real obrigatória antes de declarar FIXED_POINT.
