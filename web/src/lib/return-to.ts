@@ -40,3 +40,39 @@ export function finishAuth() {
   } catch { /* Login can still return to the home page. */ }
   window.location.replace(target || "/");
 }
+
+// Local OAuth uses the exact registered loopback callback, never a substitute.
+export function isLoopbackOAuthCallback(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" && ["127.0.0.1", "[::1]", "localhost"].includes(url.hostname)
+      && !url.username && !url.password && !url.hash;
+  } catch { return false; }
+}
+export function validatedOAuthCallback(value: string, request: URLSearchParams): URL {
+  const destination = new URL(value);
+  const expected = new URL(request.get("redirect_uri") || "");
+  if (destination.origin !== expected.origin || destination.pathname !== expected.pathname
+      || !["https:", "http:"].includes(destination.protocol)
+      || destination.username || destination.password || destination.hash !== expected.hash
+      || destination.searchParams.getAll("code").length !== 1 || !destination.searchParams.get("code")
+      || destination.searchParams.has("error")
+      || (request.get("state") && (destination.searchParams.getAll("state").length !== 1
+          || destination.searchParams.get("state") !== request.get("state")))) {
+    throw new Error("Destino OAuth divergente do cliente registrado.");
+  }
+  for (const key of new Set(expected.searchParams.keys())) {
+    if (["code", "state", "iss"].includes(key)) continue;
+    if (JSON.stringify(destination.searchParams.getAll(key)) !== JSON.stringify(expected.searchParams.getAll(key)))
+      throw new Error("Parâmetros do retorno OAuth divergentes.");
+  }
+  return destination;
+}
+export function oauthCompletionReceipt(result: {consent_receipt?: unknown; consent_expires_at?: unknown}, now = Date.now()) {
+  const receipt = result.consent_receipt;
+  const expiresAt = result.consent_expires_at;
+  if (typeof receipt !== "string" || !/^[a-f0-9]{64}$/.test(receipt)
+      || typeof expiresAt !== "number" || !Number.isFinite(expiresAt) || expiresAt <= now || expiresAt > now + 5 * 60_000 + 5000)
+    return null;
+  return {receipt, expiresAt};
+}

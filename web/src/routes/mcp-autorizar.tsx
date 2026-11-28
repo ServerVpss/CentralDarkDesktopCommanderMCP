@@ -8,8 +8,8 @@
  *  visual a partir do HTML CentralDark em Downloads, sem importar handlers simulados.
  * @pendente prova de autenticacao real, build do host e readback do deploy no mesmo SHA.
  */
-import { rememberPairing, pairingCodeFromFragment } from "@/lib/return-to";
-import { useEffect, useState, type FormEvent } from "react";
+import { rememberPairing, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt } from "@/lib/return-to";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,62 @@ export default function AutorizarMcp() {
   const [erroEnvio, alterarErroEnvio] = useState("");
   const [enviando, alterarEnviando] = useState(false);
   const [confirmado, alterarConfirmado] = useState(false);
+  const [completion, alterarCompletion] = useState<ReturnType<typeof oauthCompletionReceipt>>(null);
+  const [estadoOAuth, alterarEstadoOAuth] = useState<"pending" | "authenticated" | "unconfirmed">("pending");
+  const [callbackPendente, alterarCallbackPendente] = useState("");
+  const janelaRetorno = useRef<Window | null>(null);
+
+  useEffect(() => {
+    if (!completion) return;
+    const { receipt, expiresAt } = completion;
+    let ativo = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const abort = new AbortController();
+    // A consulta observa a emissão real da sessão, nunca usa o código como credencial.
+    const deadline = Math.min(expiresAt, Date.now() + 60_000);
+    async function consultar() {
+      if (!ativo) return;
+      if (Date.now() >= deadline) {
+        alterarEstadoOAuth("unconfirmed");
+        alterarCallbackPendente("");
+        return;
+      }
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!ativo) return;
+        if (!data.session?.access_token) {
+          alterarEstadoOAuth("unconfirmed");
+          alterarCallbackPendente("");
+          return;
+        }
+        const response = await fetch("/authorize", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + data.session.access_token, Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded" },
+          credentials: "omit", redirect: "error", cache: "no-store", signal: abort.signal,
+          body: new URLSearchParams({action: "consent_status", receipt}).toString(),
+        });
+        const result = await response.json();
+        if (!ativo) return;
+        if (response.ok && result.ok === true && result.status === "authenticated") {
+          alterarEstadoOAuth("authenticated");
+          alterarCallbackPendente("");
+          try { janelaRetorno.current?.close(); } catch { /* callback belongs to client */ }
+          janelaRetorno.current = null;
+          return;
+        }
+        if (response.status === 401 || response.status === 403) {
+          alterarEstadoOAuth("unconfirmed");
+          alterarCallbackPendente("");
+          return;
+        }
+      } catch { /* Sem resposta não há prova de sucesso. */ }
+      if (ativo) timer = setTimeout(consultar, 3000);
+    }
+    void consultar();
+    return () => { ativo = false; abort.abort(); if (timer) clearTimeout(timer); };
+  }, [completion]);
+
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -70,7 +126,7 @@ export default function AutorizarMcp() {
   const nome = dispositivo
     ? (clientId === CLIENTE_BRIDGE ? "CentralDark Remote Bridge" : "CentralDark · Vibe Coding")
     : (params?.get("client_name") || clientId || "Cliente MCP");
-  const sucesso = confirmado && dispositivo;
+  const sucesso = (confirmado && dispositivo) || estadoOAuth === "authenticated";
   const falha = params?.get("error") || "";
   const scopes = (params?.get("scope") || "mcp").split(/\s+/).filter(Boolean);
   const pedidoCompleto = dispositivo
@@ -95,15 +151,32 @@ export default function AutorizarMcp() {
     });
     alterarEnviando(true);
     alterarErroEnvio("");
+    let retorno: Window | null = null;
+    // Reserva a janela no gesto do usuário apenas para o retorno loopback.
+    // Clientes HTTPS externos conservam a navegação original.
+    if (!dispositivo && isLoopbackOAuthCallback(params.get("redirect_uri") || "")) {
+      try {
+        retorno = window.open("about:blank", "_blank", "popup,width=460,height=320");
+        if (retorno) {
+          retorno.opener = null;
+          retorno.document.title = "CentralDark · Retorno OAuth";
+          retorno.document.body.textContent = "CentralDark · Concluindo a autorização no aplicativo...";
+        }
+      } catch {
+        try { retorno?.close(); } catch { /* popup unavailable */ }
+        retorno = null;
+      }
+    }
     try {
       // Reutilizar o Supabase Auth existente, com sessão própria deste domínio.
-      // O servidor valida JWT e user_roles=admin; sessão local nunca equivale a autorização.
+      // O servidor valida JWT, user_roles e escopo; sessão local não autoriza por si só.
       const { data, error } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (error || !token) {
         const fragment = "#pair_code="+pairCode.trim();
         const code = pairingCodeFromFragment(params, fragment);
         rememberPairing(window.location.pathname + window.location.search + (code ? fragment : ""));
+        try { retorno?.close(); } catch { /* popup unavailable */ }
         window.location.replace("/auth");
         return;
       }
@@ -121,22 +194,35 @@ export default function AutorizarMcp() {
       });
       const result = await response.json();
       if (!response.ok || result.ok !== true) {
-        throw new Error(result.error || result.error_description || "Não foi possível autorizar esta solicitação.");
+        throw new Error(result.error_description || result.error || "Não foi possível autorizar esta solicitação.");
       }
       if (dispositivo) {
         alterarConfirmado(true);
         return;
       }
-      // O redirect já foi validado contra o cadastro do cliente no backend.
-      // Esta verificação adicional evita navegar fora do destino esperado.
-      const destino = new URL(String(result.redirect_to || ""));
-      const esperado = new URL(params.get("redirect_uri") || "");
-      if (destino.origin !== esperado.origin || destino.pathname !== esperado.pathname
-          || !["https:", "http:"].includes(destino.protocol)) {
-        throw new Error("Destino OAuth divergente do cliente registrado.");
+      const destino = validatedOAuthCallback(String(result.redirect_to || ""), params);
+      const receipt = oauthCompletionReceipt(result);
+      if (receipt && isLoopbackOAuthCallback(destino.toString())) {
+        alterarCompletion(receipt);
+        alterarEstadoOAuth("pending");
+        if (retorno && !retorno.closed) {
+          try {
+            retorno.location.replace(destino.toString());
+            janelaRetorno.current = retorno;
+          } catch {
+            try { retorno.close(); } catch { /* popup unavailable */ }
+            alterarCallbackPendente(destino.toString());
+          }
+        } else {
+          alterarCallbackPendente(destino.toString());
+        }
+        return;
       }
+      // Servidores anteriores e clientes HTTPS externos recebem o retorno registrado.
+      try { retorno?.close(); } catch { /* popup unavailable */ }
       window.location.assign(destino.toString());
     } catch (error) {
+      try { retorno?.close(); } catch { /* popup unavailable */ }
       alterarErroEnvio(error instanceof Error ? error.message : "Falha na autorização. Confira sua sessão na CentralDark.");
     } finally {
       alterarEnviando(false);
@@ -167,13 +253,29 @@ export default function AutorizarMcp() {
           {sucesso ? (
             <div role="status" className="space-y-3 py-3 text-center">
               <ShieldCheck aria-hidden="true" className="mx-auto size-9 text-neon-green" />
-              <h1 className="text-xl font-semibold">Confirmação enviada</h1>
+              <h1 className="text-xl font-semibold">{dispositivo ? "Confirmação enviada" : "Autenticado com sucesso"}</h1>
               <p className="text-sm text-muted-foreground">
                 Retorne ao {nome} e confira o estado da conexão no próprio aplicativo.
               </p>
               <p className="text-xs text-muted-foreground">
-                Volte ao terminal para conferir a sessão. Nenhum token é exibido nesta página.
+                {dispositivo ? "Volte ao terminal para conferir a sessão." : "A sessão OAuth foi emitida pelo servidor. Confira as ferramentas no aplicativo."} Nenhum token é exibido nesta página.
               </p>
+            </div>
+          ) : completion ? (
+            <div role="status" className="space-y-3 py-3 text-center">
+              <ShieldCheck aria-hidden="true" className="mx-auto size-9 text-gold" />
+              <h1 className="text-xl font-semibold">{estadoOAuth === "unconfirmed" ? "Conexão ainda não confirmada" : "Permissão concedida"}</h1>
+              <p className="text-sm text-muted-foreground">
+                {estadoOAuth === "unconfirmed"
+                  ? "O aplicativo não concluiu a troca OAuth neste prazo. Inicie uma nova conexão no aplicativo, com o retorno local ativo."
+                  : "Aguardando o aplicativo concluir a autenticação. Esta tela confirma automaticamente quando a sessão OAuth for emitida."}
+              </p>
+              {callbackPendente && estadoOAuth === "pending" && (
+                <a className="inline-block rounded-md border border-gold/40 px-4 py-2 text-sm text-gold"
+                  href={callbackPendente} target="_blank" rel="noopener noreferrer"
+                  onClick={() => alterarCallbackPendente("")}>Concluir no aplicativo</a>
+              )}
+              <p className="text-xs text-muted-foreground">O retorno OAuth utiliza o endereço registrado pelo aplicativo. Nenhum código ou token é exibido.</p>
             </div>
           ) : !params ? (
             <p role="status" className="py-4 text-sm text-muted-foreground">Carregando solicitação…</p>
@@ -219,7 +321,7 @@ export default function AutorizarMcp() {
                   <div className="flex items-center gap-2 py-2.5">
                     <ShieldCheck className="size-4 shrink-0 text-gold" aria-hidden="true" />
                     <p className="min-w-0 flex-1 text-xs">
-                      {scopes.includes("admin") ? "Inclui acesso administrativo solicitado" : "O teste de pareamento não libera execução remota"}
+                      {scopes.includes("admin") ? "Inclui acesso administrativo solicitado" : dispositivo ? "O teste de pareamento não libera execução remota" : "Acesso limitado às permissões da conta"}
                     </p>
                     <Check className="size-4 shrink-0 text-gold" aria-hidden="true" />
                   </div>

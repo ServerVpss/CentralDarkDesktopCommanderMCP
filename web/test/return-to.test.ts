@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment } from "../src/lib/return-to.ts";
+import { safePairingPath, rememberPairing, finishAuth, pairingCodeFromFragment, isLoopbackOAuthCallback, validatedOAuthCallback, oauthCompletionReceipt } from "../src/lib/return-to.ts";
 test("continua a solicitação no mesmo domínio",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b&pair_code=1234"),"/mcp-autorizar?client_id=centraldark.remote-bridge&pair_id=a&pair_nonce=b"));
 test("rejeita redirecionamento externo e caminhos não autorizados",()=>{for(const p of ["https://evil.example/mcp-autorizar?client_id=a","//evil.example/","/auth?next=x","/mcp-autorizar?client_id=a#token","/mcp-autorizar?pair_id=a","/mcp-autorizar?client_id=a&client_id=b"])assert.equal(safePairingPath(p),null);});
 test("não preserva tokens nem parâmetros desconhecidos",()=>assert.equal(safePairingPath("/mcp-autorizar?client_id=a&access_token=secret&refresh_token=secret"),"/mcp-autorizar?client_id=a"));
@@ -36,4 +36,21 @@ test("retorno após login consome a solicitação uma única vez",()=>{
     if(oldStorage)Object.defineProperty(globalThis,"sessionStorage",oldStorage);else Reflect.deleteProperty(globalThis,"sessionStorage");
     if(oldWindow)Object.defineProperty(globalThis,"window",oldWindow);else Reflect.deleteProperty(globalThis,"window");
   }
+});
+
+test("retorno loopback exato, sem substituição de host, caminho, estado ou código",()=>{
+  const request=new URLSearchParams({redirect_uri:"http://127.0.0.1:59507/callback?registered=1",state:"fixture-state"});
+  const valid="http://127.0.0.1:59507/callback?registered=1&code=fixture-code&state=fixture-state&iss=https%3A%2F%2Fmcp.centralldark.com";
+  assert.equal(isLoopbackOAuthCallback(valid),true);
+  assert.equal(validatedOAuthCallback(valid,request).href,valid);
+  for(const url of [valid.replace("59507","59508"),valid.replace("127.0.0.1","example.invalid"),valid.replace("/callback","/different"),valid.replace("fixture-state","different"),valid.replace("registered=1","registered=2"),valid.replace("code=fixture-code","code="),valid+"&code=duplicate"]) {
+    assert.throws(()=>validatedOAuthCallback(url,request));
+  }
+  assert.equal(isLoopbackOAuthCallback("https://chatgpt.com/connector_platform_oauth_redirect"),false);
+  assert.equal(isLoopbackOAuthCallback("http://127.0.0.1.example.invalid/callback"),false);
+});
+test("recibo apenas vigente e sem capacidade de autenticação",()=>{
+  const now=1000000;const receipt="a".repeat(64);
+  assert.deepEqual(oauthCompletionReceipt({consent_receipt:receipt,consent_expires_at:now+300000},now),{receipt,expiresAt:now+300000});
+  for(const input of [{},{consent_receipt:"fake",consent_expires_at:now+1},{consent_receipt:receipt,consent_expires_at:now},{consent_receipt:receipt,consent_expires_at:now+999999}]) assert.equal(oauthCompletionReceipt(input,now),null);
 });
